@@ -26,7 +26,7 @@ export const configSchema = z.object({
 function createStatelessServer({
   config,
 }: {
-  config: z.infer<typeof configSchema>;
+  config?: Partial<z.infer<typeof configSchema>>;
 }) {
   const server = new McpServer({
     name: "Rootstock Blockchain MCP Server",
@@ -40,11 +40,11 @@ function createStatelessServer({
   const getRootstockClient = () => {
     if (!rootstockClient) {
       const rootstockConfig: RootstockConfig = {
-        rpcUrl: config.rpcUrl,
-        chainId: config.chainId,
-        networkName: config.networkName,
-        explorerUrl: config.explorerUrl,
-        currencySymbol: config.currencySymbol,
+        rpcUrl: config?.rpcUrl || 'https://public-node.testnet.rsk.co',
+        chainId: config?.chainId || 31,
+        networkName: config?.networkName || 'Rootstock Testnet',
+        explorerUrl: config?.explorerUrl || 'https://explorer.testnet.rootstock.io',
+        currencySymbol: config?.currencySymbol || 'tRBTC',
       };
       rootstockClient = new RootstockClient(rootstockConfig);
     }
@@ -55,7 +55,7 @@ function createStatelessServer({
     if (!walletManager) {
       walletManager = new WalletManager();
       // Import wallet from config if privateKey is provided
-      if (config.privateKey) {
+      if (config?.privateKey) {
         try {
           walletManager.importWallet(config.privateKey, undefined, 'Smithery Wallet');
         } catch (error) {
@@ -75,7 +75,7 @@ function createStatelessServer({
   };
 
   const validateConfiguration = (toolName: string) => {
-    if (requiresAuthentication(toolName) && !config.privateKey) {
+    if (requiresAuthentication(toolName) && !config?.privateKey) {
       throw new Error('Configuration required: Please provide a private key to use wallet operations. Configure your private key in the server settings.');
     }
   };
@@ -872,15 +872,16 @@ function createServer(options: { sessionId?: string; config?: any } = {}) {
   const { sessionId, config } = options;
 
   // Set up default configuration with Smithery config override
-  const serverConfig = {
-    privateKey: config?.privateKey,
-    rpcUrl: config?.rpcUrl || 'https://public-node.testnet.rsk.co',
-    chainId: config?.chainId || 31,
-    networkName: config?.networkName || 'Rootstock Testnet',
-    explorerUrl: config?.explorerUrl || 'https://explorer.testnet.rootstock.io',
-    currencySymbol: config?.currencySymbol || 'tRBTC',
-    debug: config?.debug || false,
-  };
+  // Only include properties that are actually provided to avoid validation issues
+  const serverConfig: Partial<z.infer<typeof configSchema>> = {};
+
+  if (config?.privateKey) serverConfig.privateKey = config.privateKey;
+  if (config?.rpcUrl) serverConfig.rpcUrl = config.rpcUrl;
+  if (config?.chainId) serverConfig.chainId = config.chainId;
+  if (config?.networkName) serverConfig.networkName = config.networkName;
+  if (config?.explorerUrl) serverConfig.explorerUrl = config.explorerUrl;
+  if (config?.currencySymbol) serverConfig.currencySymbol = config.currencySymbol;
+  if (config?.debug !== undefined) serverConfig.debug = config.debug;
 
   // Create and return the server instance
   return createStatelessServer({ config: serverConfig });

@@ -62,5 +62,12 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "smithery": {
+    "runtime": "nodejs",
+    "entry": "build/smithery-server.js",
+    "build": "npm run build:smithery",
+    "start": "node build/smithery-server.js",
+    "docker": false
   }
 }

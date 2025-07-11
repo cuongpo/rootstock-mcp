@@ -2,8 +2,7 @@
   "name": "rootstock-mcp-server",
   "version": "1.1.0",
   "description": "Model Context Protocol server for Rootstock blockchain interactions",
-  "main": "build/index.js",
-  "module": "./src/smithery-server.ts",
+  "main": "./src/smithery-server.ts",
   "type": "module",
   "scripts": {
     "build": "tsc",

@@ -124,34 +124,48 @@ Users will need to provide:
 
 The timeout issues and "failedToFetchConfigSchema" error you experienced should now be resolved with these fixes.
 
-## Latest Update: Smithery CLI Entry Point Fix
+## Latest Update: Hybrid Configuration Based on Working Server
 
-The most recent fix addresses the specific error you encountered:
-- **Error**: `❌ Build failed: Error: No entry point found in package.json. Please define the "module" field`
-- **Root Cause**: Smithery CLI requires a "module" field in package.json to find the TypeScript entry point
+The most recent fix addresses the configuration schema issue by analyzing the working Hyperion server:
+- **Discovery**: Found working hyperion-mcp-server with successful Smithery deployment
+- **Root Cause**: Need hybrid configuration approach, not pure TypeScript runtime
 - **Solution**:
-  1. Added `"module": "./src/smithery-server.ts"` to package.json
-  2. Kept minimal TypeScript Deploy configuration with `runtime: "typescript"`
-  3. Verified Smithery CLI can build the project successfully locally
-  4. Implemented lazy loading pattern for tool discovery
-- **Result**: Smithery CLI now recognizes the TypeScript entry point and builds successfully
+  1. Added `startCommand` with `type: http` and `configSchema` (like working server)
+  2. Added `smithery` section to package.json with `runtime: "nodejs"`
+  3. Kept `runtime: "typescript"` in smithery.yaml for building
+  4. Implemented proper HTTP-based configuration schema exposure
+- **Result**: Configuration now matches the proven working pattern from Hyperion server
 
 **Key Changes**:
 
-**1. smithery.yaml (simplified to minimal config):**
+**1. smithery.yaml (hybrid configuration like working server):**
 ```yaml
-# Before: 268 lines of complex configuration
-# After: Minimal official TypeScript runtime configuration
 runtime: "typescript"
-env:
-  NODE_ENV: "production"
+startCommand:
+  type: http
+  configSchema:
+    type: object
+    required: ["privateKey"]
+    properties:
+      privateKey:
+        type: string
+        title: "Private Key"
+        description: "Your funded private key for Rootstock testnet..."
+      # ... other configuration properties
 ```
 
-**2. package.json (added required module field):**
+**2. package.json (added smithery section like working server):**
 ```json
 {
   "main": "build/index.js",
-  "module": "./src/smithery-server.ts"
+  "module": "./src/smithery-server.ts",
+  "smithery": {
+    "runtime": "nodejs",
+    "entry": "build/smithery-server.js",
+    "build": "npm run build:smithery",
+    "start": "node build/smithery-server.js",
+    "docker": false
+  }
 }
 ```
 

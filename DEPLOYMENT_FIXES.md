@@ -50,6 +50,14 @@ build:
 **Problem**: Mixed references to "Hyperion" and "Rootstock" throughout the code
 **Fix**: Updated all user-facing messages to consistently use "Rootstock testnet"
 
+### 6. Tool Discovery Issue (failedToFetchConfigSchema) ✅
+**Problem**: Smithery couldn't scan tools because privateKey was required for server startup
+**Fix**: Implemented lazy loading as per Smithery documentation:
+- Made privateKey optional in configuration schema
+- Allow server to start without private key for tool discovery
+- Tools provide helpful error messages when no wallet is configured
+- Enables Smithery to discover all 18 tools without authentication
+
 ## Deployment Status
 
 ✅ **All validation checks passed (14/14)**
@@ -112,4 +120,14 @@ Users will need to provide:
 3. Verify ERC20 deployment functionality
 4. Monitor for any timeout issues during deployment
 
-The timeout issues you experienced should now be resolved with these fixes.
+The timeout issues and "failedToFetchConfigSchema" error you experienced should now be resolved with these fixes.
+
+## Latest Update: Lazy Loading Implementation
+
+The most recent fix addresses the specific error you encountered:
+- **Error**: `Failed to scan tools list from server: failedToFetchConfigSchema`
+- **Root Cause**: Server required privateKey configuration before allowing tool discovery
+- **Solution**: Implemented lazy loading pattern recommended by Smithery documentation
+- **Result**: Server now starts without private key and exposes all 18 tools for discovery
+
+Your Rootstock MCP server should now deploy successfully to Smithery!

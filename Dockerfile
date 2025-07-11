@@ -1,16 +1,21 @@
-# Use Node.js 22 slim to match working Hyperion pattern
+# Minimal Dockerfile for Smithery deployment
 FROM node:22-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy all files
+# Copy package files first for better caching
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
 COPY . .
 
-# Install dependencies (exact pattern from working Hyperion build)
-RUN if [ -f package.json ]; then npm ci; fi
+# Build the project
+RUN npm run build
 
-# Build with Smithery CLI (exact pattern from working Hyperion build)
+# Build with Smithery CLI
 RUN npx -y @smithery/cli@1.2.9 build -o .smithery/index.cjs
 
 # Set environment variables

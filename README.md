@@ -11,7 +11,7 @@ The Rootstock MCP Server is a developer- and user-oriented backend service that 
 ## 🌟 Features
 
 ### Core Capabilities
-- **Standardized MCP Interface**: Expose Rootstock blockchain operations via MCP endpoint
+- **Standardized MCP Interface**: Expose Rootstock blockchain operations via MCP endpoints
 - **Wallet Management**: Create, import, and manage multiple wallets
 - **Transaction Operations**: Send native tokens and ERC20 tokens
 - **ERC20 Token Deployment**: Deploy standard and mintable ERC20 tokens

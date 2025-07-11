@@ -23,7 +23,7 @@ The Rootstock MCP Server is a developer- and user-oriented backend service that 
 ### Developer Tools
 - **Comprehensive Documentation**: Complete API reference and examples
 - **TypeScript Support**: Full type safety and IntelliSense
-- **Error Handling**: Detailed error messages and debugging information
+- **Error Handling**: Detailed error messages nd debugging information
 - **Flexible Configuration**: Environment-based configuration system
 
 ## 📋 Requirements

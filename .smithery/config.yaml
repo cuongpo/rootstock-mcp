@@ -1,38 +1,42 @@
-name: hyperion-mcp
-displayName: Hyperion Blockchain MCP Server
-description: Model Context Protocol server for Hyperion blockchain (testnet) interactions
+name: rootstock-mcp
+displayName: Rootstock Blockchain MCP Server
+description: Model Context Protocol server for Rootstock blockchain (testnet) interactions
 version: 1.0.0
-author: Hyperion MCP Team
+author: Rootstock MCP Team
 license: MIT
 
-# Force Node.js runtime (no Docker)
+# Force Node.js runtime (no Docker) - same as working Hyperion
 runtime:
   type: nodejs
-  version: "18"
-  
+  version: "22"
+
 # Build configuration
 build:
   type: npm
   command: npm run build
   outputDir: build
-  
-# Start configuration  
+
+# Start configuration
 start:
   type: nodejs
   command: node build/smithery-server.js
-  
+
 # Entry point
 entry: src/smithery-server.ts
 
 # Dependencies
 install:
   command: npm install
-  
+
 # Environment
 environment:
   NODE_ENV: production
-  
-# Disable Docker
+  ROOTSTOCK_RPC_URL: https://public-node.testnet.rsk.co
+  ROOTSTOCK_CHAIN_ID: 31
+  ROOTSTOCK_API_TIMEOUT: 60000
+  ROOTSTOCK_MAX_RETRIES: 5
+
+# Disable Docker - same as working Hyperion
 docker:
   enabled: false
   
@@ -46,17 +50,17 @@ categories:
   - erc20
 
 keywords:
-  - hyperion
-  - hyperion-testnet
+  - rootstock
+  - rootstock-testnet
   - blockchain
   - cryptocurrency
   - wallet
-  - tmetis
+  - trbtc
   - smart-contracts
   - defi
   - mcp
   - model-context-protocol
-  - chain-133717
+  - chain-31
   - erc20
   - token
   - token-deployment

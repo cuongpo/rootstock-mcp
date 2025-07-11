@@ -1,45 +1,17 @@
-# Use Node.js 18 Alpine for smaller image size
-FROM node:18-alpine
+# Use Node.js 22 slim to match Smithery's expected pattern
+FROM node:22-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for building native modules
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    git
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy source code
+# Copy all files
 COPY . .
 
-# Build the TypeScript project
-RUN npm run build
+# Install dependencies (Smithery expects this pattern)
+RUN if [ -f package.json ]; then npm ci; fi
 
-# Remove development dependencies and source files to reduce image size
-RUN npm prune --production && \
-    rm -rf src/ && \
-    rm -rf node_modules/@types/ && \
-    rm -rf *.ts && \
-    rm -rf tsconfig.json
-
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S mcp -u 1001
-
-# Change ownership of the app directory
-RUN chown -R mcp:nodejs /app
-USER mcp
-
-# Expose port (if needed for health checks)
-EXPOSE 3000
+# Build with Smithery CLI (matches successful Hyperion pattern)
+RUN npx -y @smithery/cli@1.2.9 build -o .smithery/index.cjs
 
 # Set environment variables
 ENV NODE_ENV=production

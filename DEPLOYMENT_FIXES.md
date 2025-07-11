@@ -51,12 +51,13 @@ build:
 **Fix**: Updated all user-facing messages to consistently use "Rootstock testnet"
 
 ### 6. Tool Discovery Issue (failedToFetchConfigSchema) ✅
-**Problem**: Smithery couldn't scan tools due to configuration schema conflicts
-**Fix**: Resolved configuration schema conflicts:
+**Problem**: Smithery couldn't scan tools due to incorrect deployment configuration
+**Fix**: Switched to proper TypeScript Deploy configuration:
+- Added `runtime: "typescript"` specification
+- Removed complex Custom Deploy sections (build/start/docker/startCommand)
+- Simplified smithery.yaml to follow TypeScript Deploy format
 - Implemented lazy loading (privateKey optional for tool discovery)
-- Removed conflicting `environment` section from smithery.yaml
-- For MCP servers, Smithery uses `configSchema` approach, not environment variables
-- Server starts without private key and exposes all 18 tools for discovery
+- Server starts without configuration and exposes all 18 tools for discovery
 
 ## Deployment Status
 
@@ -122,15 +123,30 @@ Users will need to provide:
 
 The timeout issues and "failedToFetchConfigSchema" error you experienced should now be resolved with these fixes.
 
-## Latest Update: Configuration Schema Fix
+## Latest Update: TypeScript Deploy Configuration
 
 The most recent fix addresses the specific error you encountered:
 - **Error**: `Failed to scan tools list from server: failedToFetchConfigSchema`
-- **Root Cause**: Conflicting configuration methods in smithery.yaml (both `configSchema` and `environment` sections)
+- **Root Cause**: Using incorrect deployment method (Custom Deploy instead of TypeScript Deploy)
 - **Solution**:
-  1. Implemented lazy loading pattern for tool discovery
-  2. Removed conflicting `environment` section from smithery.yaml
-  3. Used only `configSchema` approach as required for MCP servers
-- **Result**: Server now starts cleanly and exposes all 18 tools for discovery without schema conflicts
+  1. Switched to TypeScript Deploy method with `runtime: "typescript"`
+  2. Removed complex Custom Deploy configuration sections
+  3. Simplified smithery.yaml to follow official TypeScript Deploy format
+  4. Implemented lazy loading pattern for tool discovery
+- **Result**: Server now uses correct deployment method and exposes all 18 tools for discovery
+
+**Key Change**:
+```yaml
+# Before: Complex Custom Deploy configuration
+runtime: "nodejs"
+build:
+  command: "npm run build:smithery"
+startCommand:
+  type: mcp
+  configSchema: {...}
+
+# After: Simple TypeScript Deploy configuration
+runtime: "typescript"
+```
 
 Your Rootstock MCP server should now deploy successfully to Smithery!

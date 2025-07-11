@@ -17,8 +17,8 @@ ROOTSTOCK_RPC_URL=http://localhost:8545
 
 **Examples:**
 - Local development: `http://localhost:8545`
-- Testnet: `https://testnet-rpc.hyperion.io`
-- Mainnet: `https://mainnet-rpc.hyperion.io`
+- Testnet: `https://public-node.testnet.rsk.co`
+- Mainnet: `https://public-node.rsk.co`
 
 ### Optional Configuration
 
@@ -137,10 +137,10 @@ ROOTSTOCK_API_TIMEOUT=10000
 
 ```env
 # Testnet Configuration
-ROOTSTOCK_RPC_URL=https://testnet-rpc.hyperion.io
-ROOTSTOCK_CHAIN_ID=3
+ROOTSTOCK_RPC_URL=https://public-node.testnet.rsk.co
+ROOTSTOCK_CHAIN_ID=31
 ROOTSTOCK_NETWORK_NAME=Rootstock Testnet
-ROOTSTOCK_EXPLORER_URL=https://testnet-explorer.hyperion.io
+ROOTSTOCK_EXPLORER_URL=https://explorer.testnet.rootstock.io
 
 # Testnet wallet
 ROOTSTOCK_PRIVATE_KEYS=your_testnet_private_key_here
@@ -157,10 +157,10 @@ ROOTSTOCK_MAX_RETRIES=3
 
 ```env
 # Production Configuration
-ROOTSTOCK_RPC_URL=https://mainnet-rpc.hyperion.io
-ROOTSTOCK_CHAIN_ID=1
+ROOTSTOCK_RPC_URL=https://public-node.rsk.co
+ROOTSTOCK_CHAIN_ID=30
 ROOTSTOCK_NETWORK_NAME=Rootstock Mainnet
-ROOTSTOCK_EXPLORER_URL=https://explorer.hyperion.io
+ROOTSTOCK_EXPLORER_URL=https://explorer.rsk.co
 
 # Production wallets (use secure key management)
 ROOTSTOCK_PRIVATE_KEYS=${SECURE_PRIVATE_KEY_1},${SECURE_PRIVATE_KEY_2}

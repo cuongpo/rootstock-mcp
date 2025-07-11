@@ -48,6 +48,8 @@ ENV ROOTSTOCK_CHAIN_ID=31
 ENV ROOTSTOCK_NETWORK_NAME="Rootstock Testnet"
 ENV ROOTSTOCK_CURRENCY_SYMBOL=tRBTC
 ENV ROOTSTOCK_EXPLORER_URL=https://explorer.testnet.rootstock.io
+ENV ROOTSTOCK_API_TIMEOUT=60000
+ENV ROOTSTOCK_MAX_RETRIES=5
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

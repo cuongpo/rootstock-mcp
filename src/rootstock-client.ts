@@ -27,13 +27,18 @@ export class RootstockClient {
 
   constructor(config: RootstockConfig) {
     this.config = config;
-    this.provider = new ethers.JsonRpcProvider(config.rpcUrl);
+    this.provider = new ethers.JsonRpcProvider(config.rpcUrl, undefined, {
+      staticNetwork: true,
+      batchMaxCount: 1,
+    });
     this.httpClient = axios.create({
       baseURL: config.rpcUrl,
-      timeout: 30000,
+      timeout: 60000, // Increased timeout for Rootstock
       headers: {
         'Content-Type': 'application/json',
       },
+      maxRedirects: 5,
+      validateStatus: (status) => status < 500, // Accept 4xx errors but not 5xx
     });
   }
 

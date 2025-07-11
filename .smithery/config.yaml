@@ -1,0 +1,63 @@
+name: hyperion-mcp
+displayName: Hyperion Blockchain MCP Server
+description: Model Context Protocol server for Hyperion blockchain (testnet) interactions
+version: 1.0.0
+author: Hyperion MCP Team
+license: MIT
+
+# Force Node.js runtime (no Docker)
+runtime:
+  type: nodejs
+  version: "18"
+  
+# Build configuration
+build:
+  type: npm
+  command: npm run build
+  outputDir: build
+  
+# Start configuration  
+start:
+  type: nodejs
+  command: node build/smithery-server.js
+  
+# Entry point
+entry: src/smithery-server.ts
+
+# Dependencies
+install:
+  command: npm install
+  
+# Environment
+environment:
+  NODE_ENV: production
+  
+# Disable Docker
+docker:
+  enabled: false
+  
+# Categories and metadata
+categories:
+  - blockchain
+  - cryptocurrency
+  - wallet
+  - defi
+  - tokens
+  - erc20
+
+keywords:
+  - hyperion
+  - hyperion-testnet
+  - blockchain
+  - cryptocurrency
+  - wallet
+  - tmetis
+  - smart-contracts
+  - defi
+  - mcp
+  - model-context-protocol
+  - chain-133717
+  - erc20
+  - token
+  - token-deployment
+  - token-minting

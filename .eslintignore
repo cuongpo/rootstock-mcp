@@ -1,0 +1,49 @@
+# Build outputs
+build/
+dist/
+*.js.map
+*.d.ts.map
+
+# Dependencies
+node_modules/
+
+# Generated files
+*.js
+!.eslintrc.js
+!jest.config.js
+
+# Test files (if you want to exclude them)
+# **/*.test.ts
+# **/*.spec.ts
+
+# Example projects
+say-hello/
+
+# Smithery generated files
+.smithery/
+
+# Backup files
+*.backup
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/

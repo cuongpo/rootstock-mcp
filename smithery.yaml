@@ -32,7 +32,10 @@ keywords:
   - token-deployment
   - token-minting
 
-runtime: "typescript"
+runtime: "nodejs"
+
+docker:
+  enabled: false
 
 startCommand:
   type: http

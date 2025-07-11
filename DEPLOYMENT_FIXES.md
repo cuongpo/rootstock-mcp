@@ -130,23 +130,29 @@ The most recent fix addresses the specific error you encountered:
 - **Root Cause**: Using incorrect deployment method (Custom Deploy instead of TypeScript Deploy)
 - **Solution**:
   1. Switched to TypeScript Deploy method with `runtime: "typescript"`
-  2. Removed complex Custom Deploy configuration sections
-  3. Simplified smithery.yaml to follow official TypeScript Deploy format
+  2. Removed ALL custom sections (tools, examples, documentation, etc.)
+  3. Used minimal configuration matching official Smithery docs exactly
   4. Implemented lazy loading pattern for tool discovery
 - **Result**: Server now uses correct deployment method and exposes all 18 tools for discovery
 
 **Key Change**:
 ```yaml
-# Before: Complex Custom Deploy configuration
-runtime: "nodejs"
-build:
-  command: "npm run build:smithery"
-startCommand:
-  type: mcp
-  configSchema: {...}
-
-# After: Simple TypeScript Deploy configuration
+# Before: Complex configuration with tools, examples, etc.
 runtime: "typescript"
+tools:
+  - name: create_wallet
+    description: ...
+examples:
+  - name: Configuration Setup
+    code: |
+      ...
+# 268 lines of configuration
+
+# After: Minimal official TypeScript runtime configuration
+runtime: "typescript"
+env:
+  NODE_ENV: "production"
+# Only 3 lines - matches official Smithery docs exactly
 ```
 
 Your Rootstock MCP server should now deploy successfully to Smithery!

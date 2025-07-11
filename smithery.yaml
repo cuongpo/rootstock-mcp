@@ -47,7 +47,7 @@ startCommand:
   type: mcp
   configSchema:
     type: object
-    required: ["privateKey"]
+    required: []
     properties:
       privateKey:
         type: string

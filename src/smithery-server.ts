@@ -52,6 +52,7 @@ export default function createStatelessServer({
       walletManager.importWallet(config.privateKey, undefined, 'Smithery Wallet');
     } catch (error) {
       console.error('Failed to import wallet from config:', error);
+      // Don't throw error to allow tool discovery without valid private key
     }
   }
 
@@ -908,7 +909,10 @@ const isDirectExecution = process.argv[1] && (
 );
 
 if (isDirectExecution) {
+  const privateKey = process.env.ROOTSTOCK_PRIVATE_KEYS || process.env.HYPERION_PRIVATE_KEYS;
+
   const defaultConfig = {
+    privateKey: privateKey ? privateKey.split(',')[0] : undefined, // Use first private key if multiple provided
     rpcUrl: process.env.ROOTSTOCK_RPC_URL || process.env.HYPERION_RPC_URL || 'https://public-node.testnet.rsk.co',
     chainId: parseInt(process.env.ROOTSTOCK_CHAIN_ID || process.env.HYPERION_CHAIN_ID || '31'),
     networkName: process.env.ROOTSTOCK_NETWORK_NAME || process.env.HYPERION_NETWORK_NAME || 'Rootstock Testnet',

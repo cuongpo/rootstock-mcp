@@ -23,7 +23,7 @@ export const configSchema = z.object({
   debug: z.boolean().default(false).describe("Enable debug logging"),
 });
 
-export default function createStatelessServer({
+function createStatelessServer({
   config,
 }: {
   config: z.infer<typeof configSchema>;
@@ -33,27 +33,52 @@ export default function createStatelessServer({
     version: "1.1.0",
   });
 
-  // Initialize configuration
-  const rootstockConfig: RootstockConfig = {
-    rpcUrl: config.rpcUrl,
-    chainId: config.chainId,
-    networkName: config.networkName,
-    explorerUrl: config.explorerUrl,
-    currencySymbol: config.currencySymbol,
+  // Lazy initialization - only create clients when needed
+  let rootstockClient: RootstockClient | null = null;
+  let walletManager: WalletManager | null = null;
+
+  const getRootstockClient = () => {
+    if (!rootstockClient) {
+      const rootstockConfig: RootstockConfig = {
+        rpcUrl: config.rpcUrl,
+        chainId: config.chainId,
+        networkName: config.networkName,
+        explorerUrl: config.explorerUrl,
+        currencySymbol: config.currencySymbol,
+      };
+      rootstockClient = new RootstockClient(rootstockConfig);
+    }
+    return rootstockClient;
   };
 
-  // Initialize clients
-  const rootstockClient = new RootstockClient(rootstockConfig);
-  const walletManager = new WalletManager();
-
-  // Import wallet from config if privateKey is provided
-  if (config.privateKey) {
-    try {
-      walletManager.importWallet(config.privateKey, undefined, 'Smithery Wallet');
-    } catch (error) {
-      console.error('Failed to import wallet from config:', error);
+  const getWalletManager = () => {
+    if (!walletManager) {
+      walletManager = new WalletManager();
+      // Import wallet from config if privateKey is provided
+      if (config.privateKey) {
+        try {
+          walletManager.importWallet(config.privateKey, undefined, 'Smithery Wallet');
+        } catch (error) {
+          console.error('Failed to import wallet from config:', error);
+        }
+      }
     }
-  }
+    return walletManager;
+  };
+
+  const requiresAuthentication = (toolName: string): boolean => {
+    const authRequiredTools = [
+      'create_wallet', 'import_wallet', 'send_transaction',
+      'deploy_erc20_token', 'mint_tokens', 'deploy_erc721_token', 'mint_nft'
+    ];
+    return authRequiredTools.includes(toolName);
+  };
+
+  const validateConfiguration = (toolName: string) => {
+    if (requiresAuthentication(toolName) && !config.privateKey) {
+      throw new Error('Configuration required: Please provide a private key to use wallet operations. Configure your private key in the server settings.');
+    }
+  };
 
   // Create Wallet Tool
   server.tool(
@@ -64,7 +89,8 @@ export default function createStatelessServer({
     },
     async ({ name }) => {
       try {
-        const walletInfo = walletManager.createWallet(name);
+        validateConfiguration('create_wallet');
+        const walletInfo = getWalletManager().createWallet(name);
         return {
           content: [
             {
@@ -97,7 +123,8 @@ export default function createStatelessServer({
     },
     async ({ privateKey, mnemonic, name }) => {
       try {
-        const walletInfo = walletManager.importWallet(privateKey, mnemonic, name);
+        validateConfiguration('import_wallet');
+        const walletInfo = getWalletManager().importWallet(privateKey, mnemonic, name);
         return {
           content: [
             {
@@ -126,8 +153,9 @@ export default function createStatelessServer({
     {},
     async () => {
       try {
-        const wallets = walletManager.listWallets();
-        const currentAddress = walletManager.getCurrentAddress();
+        // This tool doesn't require authentication - it can list empty wallets
+        const wallets = getWalletManager().listWallets();
+        const currentAddress = getWalletManager().getCurrentAddress();
 
         let response = `Available Wallets (${wallets.length}):\n\n`;
 
@@ -167,8 +195,9 @@ export default function createStatelessServer({
     },
     async ({ address, tokenAddress }) => {
       try {
+        const client = getRootstockClient();
         if (tokenAddress) {
-          const tokenBalance = await rootstockClient.getTokenBalance(address, tokenAddress);
+          const tokenBalance = await client.getTokenBalance(address, tokenAddress);
           return {
             content: [
               {
@@ -178,12 +207,12 @@ export default function createStatelessServer({
             ],
           };
         } else {
-          const balance = await rootstockClient.getBalance(address);
+          const balance = await client.getBalance(address);
           return {
             content: [
               {
                 type: "text",
-                text: `Native Balance:\n\nAddress: ${address}\nBalance: ${balance} ${rootstockClient.getCurrencySymbol()}`,
+                text: `Native Balance:\n\nAddress: ${address}\nBalance: ${balance} ${client.getCurrencySymbol()}`,
               },
             ],
           };
@@ -210,14 +239,15 @@ export default function createStatelessServer({
     },
     async ({ address }) => {
       try {
-        const balance = await rootstockClient.getBalance(address);
-        const networkInfo = await rootstockClient.getNetworkInfo();
+        const client = getRootstockClient();
+        const balance = await client.getBalance(address);
+        const networkInfo = await client.getNetworkInfo();
 
         return {
           content: [
             {
               type: "text",
-              text: `Native tRBTC Balance:\n\nAddress: ${address}\nBalance: ${balance} ${rootstockClient.getCurrencySymbol()}\nNetwork: ${networkInfo.networkName} (Chain ID: ${networkInfo.chainId})\nBlock: ${networkInfo.blockNumber}`,
+              text: `Native tRBTC Balance:\n\nAddress: ${address}\nBalance: ${balance} ${client.getCurrencySymbol()}\nNetwork: ${networkInfo.networkName} (Chain ID: ${networkInfo.chainId})\nBlock: ${networkInfo.blockNumber}`,
             },
           ],
         };
@@ -247,33 +277,13 @@ export default function createStatelessServer({
     },
     async ({ to, amount, tokenAddress, gasLimit, gasPrice }) => {
       try {
-        // Check if wallet is configured
-        let wallet;
-        try {
-          wallet = walletManager.getCurrentWallet();
-        } catch (error) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `❌ No wallet configured for transactions!\n\n` +
-                      `To send transactions, you need to configure your private key:\n\n` +
-                      `🔧 **Via Smithery Interface (Recommended):**\n` +
-                      `1. Click "Save & Connect" below\n` +
-                      `2. Enter your funded private key for Rootstock testnet\n` +
-                      `3. Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17\n\n` +
-                      `🔧 **Alternative Methods:**\n` +
-                      `• Use 'import_wallet' tool to add your private key\n` +
-                      `• Set ROOTSTOCK_PRIVATE_KEYS environment variable\n\n` +
-                      `Original error: ${error instanceof Error ? error.message : String(error)}`,
-              },
-            ],
-          };
-        }
+        validateConfiguration('send_transaction');
+        const client = getRootstockClient();
+        const wallet = getWalletManager().getCurrentWallet();
 
         let result;
         if (tokenAddress) {
-          result = await rootstockClient.sendTokenTransaction(
+          result = await client.sendTokenTransaction(
             wallet,
             tokenAddress,
             to,
@@ -282,7 +292,7 @@ export default function createStatelessServer({
             gasPrice
           );
         } else {
-          result = await rootstockClient.sendTransaction(
+          result = await client.sendTransaction(
             wallet,
             to,
             amount,
@@ -319,7 +329,8 @@ export default function createStatelessServer({
     {},
     async () => {
       try {
-        const networkInfo = await rootstockClient.getNetworkInfo();
+        const client = getRootstockClient();
+        const networkInfo = await client.getNetworkInfo();
         return {
           content: [
             {
@@ -350,7 +361,8 @@ export default function createStatelessServer({
     },
     async ({ hash }) => {
       try {
-        const transaction = await rootstockClient.getTransaction(hash);
+        const client = getRootstockClient();
+        const transaction = await client.getTransaction(hash);
         return {
           content: [
             {
@@ -382,7 +394,8 @@ export default function createStatelessServer({
     },
     async ({ blockNumber, blockHash }) => {
       try {
-        const block = await rootstockClient.getBlock(blockNumber, blockHash);
+        const client = getRootstockClient();
+        const block = await client.getBlock(blockNumber, blockHash);
         return {
           content: [
             {
@@ -415,12 +428,13 @@ export default function createStatelessServer({
     },
     async ({ to, value, data }) => {
       try {
-        const gasEstimate = await rootstockClient.estimateGas(to, value, data);
+        const client = getRootstockClient();
+        const gasEstimate = await client.estimateGas(to, value, data);
         return {
           content: [
             {
               type: "text",
-              text: `Gas Estimation:\n\nEstimated Gas: ${gasEstimate.gasLimit}\nGas Price: ${gasEstimate.gasPrice}\nEstimated Cost: ${gasEstimate.estimatedCost} ${rootstockClient.getCurrencySymbol()}`,
+              text: `Gas Estimation:\n\nEstimated Gas: ${gasEstimate.gasLimit}\nGas Price: ${gasEstimate.gasPrice}\nEstimated Cost: ${gasEstimate.estimatedCost} ${client.getCurrencySymbol()}`,
             },
           ],
         };
@@ -476,8 +490,9 @@ export default function createStatelessServer({
     {},
     async () => {
       try {
-        const currentAddress = walletManager.getCurrentAddress();
-        const wallet = walletManager.getCurrentWallet();
+        const manager = getWalletManager();
+        const currentAddress = manager.getCurrentAddress();
+        const wallet = manager.getCurrentWallet();
         return {
           content: [
             {
@@ -514,31 +529,11 @@ export default function createStatelessServer({
     },
     async ({ name, symbol, decimals, initialSupply, mintable, gasLimit, gasPrice }) => {
       try {
-        // Check if wallet is configured
-        let wallet;
-        try {
-          wallet = walletManager.getCurrentWallet();
-        } catch (error) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `❌ No wallet configured for ERC20 deployment!\n\n` +
-                      `To deploy ERC20 tokens, you need to configure your private key:\n\n` +
-                      `🔧 **Via Smithery Interface (Recommended):**\n` +
-                      `1. Click "Save & Connect" below\n` +
-                      `2. Enter your funded private key for Rootstock testnet\n` +
-                      `3. Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17\n\n` +
-                      `🔧 **Alternative Methods:**\n` +
-                      `• Use 'import_wallet' tool to add your private key\n` +
-                      `• Set ROOTSTOCK_PRIVATE_KEYS environment variable\n\n` +
-                      `Original error: ${error instanceof Error ? error.message : String(error)}`,
-              },
-            ],
-          };
-        }
+        validateConfiguration('deploy_erc20_token');
+        const client = getRootstockClient();
+        const wallet = getWalletManager().getCurrentWallet();
 
-        const result = await rootstockClient.deployERC20Token(
+        const result = await client.deployERC20Token(
           wallet,
           name,
           symbol,
@@ -549,7 +544,7 @@ export default function createStatelessServer({
           gasPrice
         );
 
-        const explorerUrl = rootstockClient.getExplorerUrl();
+        const explorerUrl = client.getExplorerUrl();
         return {
           content: [
             {
@@ -591,8 +586,9 @@ export default function createStatelessServer({
     },
     async ({ tokenAddress }) => {
       try {
-        const result = await rootstockClient.getTokenInfo(tokenAddress);
-        const explorerUrl = rootstockClient.getExplorerUrl();
+        const client = getRootstockClient();
+        const result = await client.getTokenInfo(tokenAddress);
+        const explorerUrl = client.getExplorerUrl();
 
         return {
           content: [
@@ -635,31 +631,11 @@ export default function createStatelessServer({
     },
     async ({ tokenAddress, to, amount, gasLimit, gasPrice }) => {
       try {
-        // Check if wallet is configured
-        let wallet;
-        try {
-          wallet = walletManager.getCurrentWallet();
-        } catch (error) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `❌ No wallet configured for token minting!\n\n` +
-                      `To mint tokens, you need to configure your private key:\n\n` +
-                      `🔧 **Via Smithery Interface (Recommended):**\n` +
-                      `1. Click "Save & Connect" below\n` +
-                      `2. Enter your funded private key for Rootstock testnet\n` +
-                      `3. Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17\n\n` +
-                      `🔧 **Alternative Methods:**\n` +
-                      `• Use 'import_wallet' tool to add your private key\n` +
-                      `• Set ROOTSTOCK_PRIVATE_KEYS environment variable\n\n` +
-                      `Original error: ${error instanceof Error ? error.message : String(error)}`,
-              },
-            ],
-          };
-        }
+        validateConfiguration('mint_tokens');
+        const client = getRootstockClient();
+        const wallet = getWalletManager().getCurrentWallet();
 
-        const result = await rootstockClient.mintTokens(
+        const result = await client.mintTokens(
           wallet,
           tokenAddress,
           to,
@@ -668,7 +644,7 @@ export default function createStatelessServer({
           gasPrice
         );
 
-        const explorerUrl = rootstockClient.getExplorerUrl();
+        const explorerUrl = client.getExplorerUrl();
         return {
           content: [
             {
@@ -711,31 +687,11 @@ export default function createStatelessServer({
     },
     async ({ name, symbol, mintable, gasLimit, gasPrice }) => {
       try {
-        // Check if wallet is configured
-        let wallet;
-        try {
-          wallet = walletManager.getCurrentWallet();
-        } catch (error) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `❌ No wallet configured for ERC721 deployment!\n\n` +
-                      `To deploy ERC721 NFTs, you need to configure your private key:\n\n` +
-                      `🔧 **Via Smithery Interface (Recommended):**\n` +
-                      `1. Click "Save & Connect" below\n` +
-                      `2. Enter your funded private key for Rootstock testnet\n` +
-                      `3. Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17\n\n` +
-                      `🔧 **Alternative Methods:**\n` +
-                      `• Use 'import_wallet' tool to add your private key\n` +
-                      `• Set ROOTSTOCK_PRIVATE_KEYS environment variable\n\n` +
-                      `Original error: ${error instanceof Error ? error.message : String(error)}`,
-              },
-            ],
-          };
-        }
+        validateConfiguration('deploy_erc721_token');
+        const client = getRootstockClient();
+        const wallet = getWalletManager().getCurrentWallet();
 
-        const result = await rootstockClient.deployERC721Token(
+        const result = await client.deployERC721Token(
           wallet,
           name,
           symbol,
@@ -744,7 +700,7 @@ export default function createStatelessServer({
           gasPrice
         );
 
-        const explorerUrl = rootstockClient.getExplorerUrl();
+        const explorerUrl = client.getExplorerUrl();
         return {
           content: [
             {
@@ -785,8 +741,9 @@ export default function createStatelessServer({
     },
     async ({ tokenAddress, tokenId }) => {
       try {
-        const result = await rootstockClient.getNFTInfo(tokenAddress, tokenId);
-        const explorerUrl = rootstockClient.getExplorerUrl();
+        const client = getRootstockClient();
+        const result = await client.getNFTInfo(tokenAddress, tokenId);
+        const explorerUrl = client.getExplorerUrl();
 
         return {
           content: [
@@ -831,31 +788,11 @@ export default function createStatelessServer({
     },
     async ({ tokenAddress, to, tokenId, tokenURI, gasLimit, gasPrice }) => {
       try {
-        // Check if wallet is configured
-        let wallet;
-        try {
-          wallet = walletManager.getCurrentWallet();
-        } catch (error) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `❌ No wallet configured for NFT minting!\n\n` +
-                      `To mint NFTs, you need to configure your private key:\n\n` +
-                      `🔧 **Via Smithery Interface (Recommended):**\n` +
-                      `1. Click "Save & Connect" below\n` +
-                      `2. Enter your funded private key for Rootstock testnet\n` +
-                      `3. Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17\n\n` +
-                      `🔧 **Alternative Methods:**\n` +
-                      `• Use 'import_wallet' tool to add your private key\n` +
-                      `• Set ROOTSTOCK_PRIVATE_KEYS environment variable\n\n` +
-                      `Original error: ${error instanceof Error ? error.message : String(error)}`,
-              },
-            ],
-          };
-        }
+        validateConfiguration('mint_nft');
+        const client = getRootstockClient();
+        const wallet = getWalletManager().getCurrentWallet();
 
-        const result = await rootstockClient.mintNFT(
+        const result = await client.mintNFT(
           wallet,
           tokenAddress,
           to,
@@ -865,7 +802,7 @@ export default function createStatelessServer({
           gasPrice
         );
 
-        const explorerUrl = rootstockClient.getExplorerUrl();
+        const explorerUrl = client.getExplorerUrl();
         return {
           content: [
             {
@@ -929,3 +866,27 @@ if (isDirectExecution) {
     process.exit(1);
   });
 }
+
+// Export for Smithery deployment
+function createServer(options: { sessionId?: string; config?: any } = {}) {
+  const { sessionId, config } = options;
+
+  // Set up default configuration with Smithery config override
+  const serverConfig = {
+    privateKey: config?.privateKey,
+    rpcUrl: config?.rpcUrl || 'https://public-node.testnet.rsk.co',
+    chainId: config?.chainId || 31,
+    networkName: config?.networkName || 'Rootstock Testnet',
+    explorerUrl: config?.explorerUrl || 'https://explorer.testnet.rootstock.io',
+    currencySymbol: config?.currencySymbol || 'tRBTC',
+    debug: config?.debug || false,
+  };
+
+  // Create and return the server instance
+  return createStatelessServer({ config: serverConfig });
+}
+
+// Export as both ES module and CommonJS for Smithery compatibility
+export default createServer;
+module.exports = createServer;
+module.exports.default = createServer;

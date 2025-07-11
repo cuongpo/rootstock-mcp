@@ -125,19 +125,19 @@ Users will need to provide:
 
 The timeout issues and "failedToFetchConfigSchema" error you experienced should now be resolved with these fixes.
 
-## Latest Update: Implemented HTTP Transport (Critical Discovery!)
+## Latest Update: Added Configuration Schema HTTP Endpoints (Final Fix!)
 
-The most recent fix addresses the fundamental requirement that was missing:
-- **Critical Discovery**: ALL Smithery deployments require HTTP endpoints, not just stdio transport
-- **Root Cause**: Even TypeScript Deploy runs in containers and needs HTTP endpoints on PORT
-- **Missing Requirement**: Server must expose `/mcp` endpoint for Smithery tool scanning
+The most recent fix addresses the specific configuration schema requirement:
+- **Official Documentation Analysis**: TypeScript runtime servers must expose configuration schema via HTTP
+- **Root Cause**: Smithery expects dedicated HTTP endpoints for configuration schema fetching
+- **Missing Endpoints**: Server needed `/configSchema` and `/config/schema` endpoints
 - **Solution**:
-  1. Implemented dual transport: HTTP when PORT is set, stdio for local use
-  2. Added SSEServerTransport for HTTP-based MCP communication
-  3. Created proper HTTP server with `/mcp` endpoint handling
-  4. Added CORS headers for web compatibility
-  5. Server now works with both local stdio and Smithery HTTP deployment
-- **Result**: Server provides the HTTP endpoint that Smithery expects for tool scanning
+  1. Added dedicated configuration schema HTTP endpoints
+  2. Implemented `/configSchema` and `/config/schema` routes
+  3. Return proper JSON Schema format with complete property definitions
+  4. Include types, titles, descriptions, defaults, and required fields
+  5. Server now exposes configuration schema via HTTP as expected by TypeScript runtime
+- **Result**: Smithery can now successfully fetch the configuration schema via HTTP endpoints
 
 **Key Changes**:
 

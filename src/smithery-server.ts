@@ -46,8 +46,12 @@ export default function createStatelessServer({
   const rootstockClient = new RootstockClient(rootstockConfig);
   const walletManager = new WalletManager();
 
-  // Import wallet from config if privateKey is provided
-  if (config.privateKey) {
+  // Import wallet from config if privateKey is provided and valid
+  if (config.privateKey &&
+      config.privateKey !== 'your_private_key_here_64_hex_characters' &&
+      !config.privateKey.includes('your_private_key') &&
+      !config.privateKey.includes('placeholder') &&
+      config.privateKey.length >= 64) {
     try {
       walletManager.importWallet(config.privateKey, undefined, 'Smithery Wallet');
     } catch (error) {

@@ -24,16 +24,28 @@ export class WalletManager {
     const currentAddress = process.env.ROOTSTOCK_CURRENT_ADDRESS || process.env.HYPERION_CURRENT_ADDRESS;
 
     privateKeys.forEach((privateKey, index) => {
-      if (privateKey.trim()) {
-        try {
-          const wallet = new ethers.Wallet(privateKey.trim());
-          const address = addresses[index]?.trim() || wallet.address;
-          this.wallets.set(address.toLowerCase(), wallet);
-          
-          if (!this.currentWallet || address.toLowerCase() === currentAddress?.toLowerCase()) {
-            this.currentWallet = address.toLowerCase();
-          }
-        } catch (error) {
+      const trimmedKey = privateKey.trim();
+
+      // Skip placeholder or invalid private keys
+      if (!trimmedKey ||
+          trimmedKey === 'your_private_key_here_64_hex_characters' ||
+          trimmedKey.includes('your_private_key') ||
+          trimmedKey.includes('placeholder') ||
+          trimmedKey.length < 64) {
+        return; // Skip invalid/placeholder keys silently
+      }
+
+      try {
+        const wallet = new ethers.Wallet(trimmedKey);
+        const address = addresses[index]?.trim() || wallet.address;
+        this.wallets.set(address.toLowerCase(), wallet);
+
+        if (!this.currentWallet || address.toLowerCase() === currentAddress?.toLowerCase()) {
+          this.currentWallet = address.toLowerCase();
+        }
+      } catch (error) {
+        // Only log warning for keys that look valid but fail to parse
+        if (trimmedKey.length >= 64 && !trimmedKey.includes('your_private_key')) {
           console.warn(`Failed to load wallet ${index}: ${error}`);
         }
       }

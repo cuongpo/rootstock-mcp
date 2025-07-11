@@ -345,8 +345,7 @@ npm test            # Run tests
 - **Private Keys**: Never commit private keys to version control
 - **Environment Variables**: Use `.env` files for sensitive configuration
 - **Network Security**: Use HTTPS endpoints in production
-- **Wallet Security**: Store mnemonic phrases securely
-
+- **Wallet Security**: Store mnemonic phrases securel
 ## 📚 Documentation
 
 - [API Reference](docs/api.md)

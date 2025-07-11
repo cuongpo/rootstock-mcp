@@ -18,7 +18,7 @@ import {
   ERC721DeploymentResponse,
   NFTInfoResponse,
 } from './types.js';
-import erc721Contracts from './erc721-contracts-rootstock.json';
+import erc721Contracts from './erc721-contracts-rootstock.json' with { type: 'json' };
 
 export class RootstockClient {
   private provider: ethers.JsonRpcProvider;

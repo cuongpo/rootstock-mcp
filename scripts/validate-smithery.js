@@ -14,12 +14,10 @@ const checks = [];
 // Check required files
 const requiredFiles = [
   'smithery.yaml',
-  'Dockerfile',
-  '.dockerignore',
   'package.json',
-  'build/index.js',
+  'build/smithery-server.js',
   'build/smithery.yaml',
-  'build/erc20-contracts-hyperion.json'
+  'build/erc20-contracts-rootstock.json'
 ];
 
 console.log('📁 Checking required files...');
@@ -81,7 +79,7 @@ try {
 // Check build artifacts
 console.log('\n🏗️  Validating build artifacts...');
 try {
-  const indexJs = fs.readFileSync('build/index.js', 'utf8');
+  const indexJs = fs.readFileSync('build/smithery-server.js', 'utf8');
   
   const hasERC20Tools = indexJs.includes('deploy_erc20_token') &&
                        indexJs.includes('get_token_info') &&
@@ -97,14 +95,14 @@ try {
   checks.push({ name: 'Explorer links in build', passed: hasExplorerLinks });
   
 } catch (error) {
-  console.log(`   ❌ Error reading build/index.js: ${error.message}`);
-  checks.push({ name: 'build/index.js readable', passed: false });
+  console.log(`   ❌ Error reading build/smithery-server.js: ${error.message}`);
+  checks.push({ name: 'build/smithery-server.js readable', passed: false });
 }
 
 // Check ERC20 contracts
 console.log('\n🪙  Validating ERC20 contracts...');
 try {
-  const contracts = JSON.parse(fs.readFileSync('build/erc20-contracts-hyperion.json', 'utf8'));
+  const contracts = JSON.parse(fs.readFileSync('build/erc20-contracts-rootstock.json', 'utf8'));
   
   const hasSimpleERC20 = contracts.simpleERC20 && contracts.simpleERC20.bytecode;
   console.log(`   ${hasSimpleERC20 ? '✅' : '❌'} SimpleERC20 contract`);

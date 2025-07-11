@@ -35,7 +35,7 @@ keywords:
 runtime: "nodejs"
 
 build:
-  command: "npm run build"
+  command: "npm run build:smithery"
 
 start:
   command: "node build/smithery-server.js"
@@ -44,7 +44,7 @@ docker:
   enabled: false
 
 startCommand:
-  type: http
+  type: mcp
   configSchema:
     type: object
     required: ["privateKey"]

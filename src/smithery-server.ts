@@ -58,7 +58,7 @@ export default function createStatelessServer({
   // Create Wallet Tool
   server.tool(
     "create_wallet",
-    "Create a new Hyperion wallet with a generated mnemonic phrase",
+    "Create a new Rootstock wallet with a generated mnemonic phrase",
     {
       name: z.string().optional().describe("Optional name for the wallet"),
     },
@@ -201,10 +201,10 @@ export default function createStatelessServer({
     }
   );
 
-  // Get Native Balance Tool (dedicated for tMETIS)
+  // Get Native Balance Tool (dedicated for tRBTC)
   server.tool(
     "get_native_balance",
-    "Get the native tMETIS balance of a wallet address on Hyperion testnet",
+    "Get the native tRBTC balance of a wallet address on Rootstock testnet",
     {
       address: z.string().describe("Wallet address to check native balance for"),
     },
@@ -260,11 +260,11 @@ export default function createStatelessServer({
                       `To send transactions, you need to configure your private key:\n\n` +
                       `🔧 **Via Smithery Interface (Recommended):**\n` +
                       `1. Click "Save & Connect" below\n` +
-                      `2. Enter your funded private key for Hyperion testnet\n` +
+                      `2. Enter your funded private key for Rootstock testnet\n` +
                       `3. Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17\n\n` +
                       `🔧 **Alternative Methods:**\n` +
                       `• Use 'import_wallet' tool to add your private key\n` +
-                      `• Set HYPERION_PRIVATE_KEYS environment variable\n\n` +
+                      `• Set ROOTSTOCK_PRIVATE_KEYS environment variable\n\n` +
                       `Original error: ${error instanceof Error ? error.message : String(error)}`,
               },
             ],
@@ -527,11 +527,11 @@ export default function createStatelessServer({
                       `To deploy ERC20 tokens, you need to configure your private key:\n\n` +
                       `🔧 **Via Smithery Interface (Recommended):**\n` +
                       `1. Click "Save & Connect" below\n` +
-                      `2. Enter your funded private key for Hyperion testnet\n` +
+                      `2. Enter your funded private key for Rootstock testnet\n` +
                       `3. Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17\n\n` +
                       `🔧 **Alternative Methods:**\n` +
                       `• Use 'import_wallet' tool to add your private key\n` +
-                      `• Set HYPERION_PRIVATE_KEYS environment variable\n\n` +
+                      `• Set ROOTSTOCK_PRIVATE_KEYS environment variable\n\n` +
                       `Original error: ${error instanceof Error ? error.message : String(error)}`,
               },
             ],
@@ -648,11 +648,11 @@ export default function createStatelessServer({
                       `To mint tokens, you need to configure your private key:\n\n` +
                       `🔧 **Via Smithery Interface (Recommended):**\n` +
                       `1. Click "Save & Connect" below\n` +
-                      `2. Enter your funded private key for Hyperion testnet\n` +
+                      `2. Enter your funded private key for Rootstock testnet\n` +
                       `3. Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17\n\n` +
                       `🔧 **Alternative Methods:**\n` +
                       `• Use 'import_wallet' tool to add your private key\n` +
-                      `• Set HYPERION_PRIVATE_KEYS environment variable\n\n` +
+                      `• Set ROOTSTOCK_PRIVATE_KEYS environment variable\n\n` +
                       `Original error: ${error instanceof Error ? error.message : String(error)}`,
               },
             ],
@@ -724,11 +724,11 @@ export default function createStatelessServer({
                       `To deploy ERC721 NFTs, you need to configure your private key:\n\n` +
                       `🔧 **Via Smithery Interface (Recommended):**\n` +
                       `1. Click "Save & Connect" below\n` +
-                      `2. Enter your funded private key for Hyperion testnet\n` +
+                      `2. Enter your funded private key for Rootstock testnet\n` +
                       `3. Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17\n\n` +
                       `🔧 **Alternative Methods:**\n` +
                       `• Use 'import_wallet' tool to add your private key\n` +
-                      `• Set HYPERION_PRIVATE_KEYS environment variable\n\n` +
+                      `• Set ROOTSTOCK_PRIVATE_KEYS environment variable\n\n` +
                       `Original error: ${error instanceof Error ? error.message : String(error)}`,
               },
             ],
@@ -844,11 +844,11 @@ export default function createStatelessServer({
                       `To mint NFTs, you need to configure your private key:\n\n` +
                       `🔧 **Via Smithery Interface (Recommended):**\n` +
                       `1. Click "Save & Connect" below\n` +
-                      `2. Enter your funded private key for Hyperion testnet\n` +
+                      `2. Enter your funded private key for Rootstock testnet\n` +
                       `3. Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17\n\n` +
                       `🔧 **Alternative Methods:**\n` +
                       `• Use 'import_wallet' tool to add your private key\n` +
-                      `• Set HYPERION_PRIVATE_KEYS environment variable\n\n` +
+                      `• Set ROOTSTOCK_PRIVATE_KEYS environment variable\n\n` +
                       `Original error: ${error instanceof Error ? error.message : String(error)}`,
               },
             ],

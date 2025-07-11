@@ -948,8 +948,54 @@ if (isDirectExecution) {
           return;
         }
 
+        // Handle configuration schema endpoint
+        if (req.url === '/config/schema' || req.url === '/configSchema') {
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(200);
+          res.end(JSON.stringify({
+            type: "object",
+            required: ["privateKey"],
+            properties: {
+              privateKey: {
+                type: "string",
+                title: "Private Key",
+                description: "Your funded private key for Rootstock testnet (Chain ID 31). Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17"
+              },
+              rpcUrl: {
+                type: "string",
+                title: "RPC URL",
+                description: "Rootstock testnet RPC endpoint",
+                default: "https://public-node.testnet.rsk.co"
+              },
+              chainId: {
+                type: "number",
+                title: "Chain ID",
+                description: "Rootstock testnet chain ID",
+                default: 31
+              },
+              networkName: {
+                type: "string",
+                title: "Network Name",
+                description: "Network display name",
+                default: "Rootstock Testnet"
+              },
+              explorerUrl: {
+                type: "string",
+                title: "Explorer URL",
+                description: "Block explorer URL",
+                default: "https://explorer.testnet.rootstock.io"
+              },
+              currencySymbol: {
+                type: "string",
+                title: "Currency Symbol",
+                description: "Native currency symbol",
+                default: "tRBTC"
+              }
+            }
+          }, null, 2));
+        }
         // Handle MCP endpoint
-        if (req.url?.startsWith('/mcp')) {
+        else if (req.url?.startsWith('/mcp')) {
           const transport = new SSEServerTransport('/mcp', res);
           server.connect(transport).catch((error) => {
             console.error("Failed to connect SSE transport:", error);

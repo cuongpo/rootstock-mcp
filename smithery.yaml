@@ -79,18 +79,6 @@ startCommand:
         description: "Native currency symbol"
         default: "tRBTC"
 
-environment:
-  required:
-    - ROOTSTOCK_RPC_URL
-    - ROOTSTOCK_PRIVATE_KEYS
-  optional:
-    - ROOTSTOCK_CHAIN_ID
-    - ROOTSTOCK_NETWORK_NAME
-    - ROOTSTOCK_CURRENCY_SYMBOL
-    - ROOTSTOCK_EXPLORER_URL
-    - ROOTSTOCK_ADDRESSES
-    - ROOTSTOCK_CURRENT_ADDRESS
-
 tools:
   - name: create_wallet
     description: Create a new Rootstock wallet with generated mnemonic

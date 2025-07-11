@@ -43,11 +43,11 @@ EXPOSE 3000
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV HYPERION_RPC_URL=https://hyperion-testnet.metisdevops.link
-ENV HYPERION_CHAIN_ID=133717
-ENV HYPERION_NETWORK_NAME="Hyperion Testnet"
-ENV HYPERION_CURRENCY_SYMBOL=tMETIS
-ENV HYPERION_EXPLORER_URL=https://hyperion-testnet-explorer.metisdevops.link
+ENV ROOTSTOCK_RPC_URL=https://public-node.testnet.rsk.co
+ENV ROOTSTOCK_CHAIN_ID=31
+ENV ROOTSTOCK_NETWORK_NAME="Rootstock Testnet"
+ENV ROOTSTOCK_CURRENCY_SYMBOL=tRBTC
+ENV ROOTSTOCK_EXPLORER_URL=https://explorer.testnet.rootstock.io
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

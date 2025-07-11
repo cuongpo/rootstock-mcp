@@ -51,12 +51,12 @@ build:
 **Fix**: Updated all user-facing messages to consistently use "Rootstock testnet"
 
 ### 6. Tool Discovery Issue (failedToFetchConfigSchema) ✅
-**Problem**: Smithery couldn't scan tools because privateKey was required for server startup
-**Fix**: Implemented lazy loading as per Smithery documentation:
-- Made privateKey optional in configuration schema
-- Allow server to start without private key for tool discovery
-- Tools provide helpful error messages when no wallet is configured
-- Enables Smithery to discover all 18 tools without authentication
+**Problem**: Smithery couldn't scan tools due to configuration schema conflicts
+**Fix**: Resolved configuration schema conflicts:
+- Implemented lazy loading (privateKey optional for tool discovery)
+- Removed conflicting `environment` section from smithery.yaml
+- For MCP servers, Smithery uses `configSchema` approach, not environment variables
+- Server starts without private key and exposes all 18 tools for discovery
 
 ## Deployment Status
 
@@ -122,12 +122,15 @@ Users will need to provide:
 
 The timeout issues and "failedToFetchConfigSchema" error you experienced should now be resolved with these fixes.
 
-## Latest Update: Lazy Loading Implementation
+## Latest Update: Configuration Schema Fix
 
 The most recent fix addresses the specific error you encountered:
 - **Error**: `Failed to scan tools list from server: failedToFetchConfigSchema`
-- **Root Cause**: Server required privateKey configuration before allowing tool discovery
-- **Solution**: Implemented lazy loading pattern recommended by Smithery documentation
-- **Result**: Server now starts without private key and exposes all 18 tools for discovery
+- **Root Cause**: Conflicting configuration methods in smithery.yaml (both `configSchema` and `environment` sections)
+- **Solution**:
+  1. Implemented lazy loading pattern for tool discovery
+  2. Removed conflicting `environment` section from smithery.yaml
+  3. Used only `configSchema` approach as required for MCP servers
+- **Result**: Server now starts cleanly and exposes all 18 tools for discovery without schema conflicts
 
 Your Rootstock MCP server should now deploy successfully to Smithery!

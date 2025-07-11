@@ -1,6 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { z } from "zod";
 import * as dotenv from 'dotenv';
 
@@ -47,17 +46,12 @@ export default function createStatelessServer({
   const rootstockClient = new RootstockClient(rootstockConfig);
   const walletManager = new WalletManager();
 
-  // Import wallet from config if privateKey is provided and valid
-  if (config.privateKey &&
-      config.privateKey !== 'your_private_key_here_64_hex_characters' &&
-      !config.privateKey.includes('your_private_key') &&
-      !config.privateKey.includes('placeholder') &&
-      config.privateKey.length >= 64) {
+  // Import wallet from config if privateKey is provided
+  if (config.privateKey) {
     try {
       walletManager.importWallet(config.privateKey, undefined, 'Smithery Wallet');
     } catch (error) {
       console.error('Failed to import wallet from config:', error);
-      // Don't throw error to allow tool discovery without valid private key
     }
   }
 
@@ -928,99 +922,10 @@ if (isDirectExecution) {
 
   const server = createStatelessServer({ config: defaultConfig });
 
-  // Check if we should use HTTP transport (for Smithery) or stdio transport (for local use)
-  const port = process.env.PORT;
-
-  if (port) {
-    // HTTP transport for Smithery deployment
-    console.log(`Starting HTTP server on port ${port}...`);
-
-    import('http').then(({ createServer }) => {
-      const httpServer = createServer((req, res) => {
-        // Handle CORS
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-        if (req.method === 'OPTIONS') {
-          res.writeHead(200);
-          res.end();
-          return;
-        }
-
-        // Handle configuration schema endpoint
-        if (req.url === '/config/schema' || req.url === '/configSchema') {
-          res.setHeader('Content-Type', 'application/json');
-          res.writeHead(200);
-          res.end(JSON.stringify({
-            type: "object",
-            required: ["privateKey"],
-            properties: {
-              privateKey: {
-                type: "string",
-                title: "Private Key",
-                description: "Your funded private key for Rootstock testnet (Chain ID 31). Example: 3cf90f4acdaee72ab90c0da7eda158ec1e908a5698aaf11a99070bba5da18b17"
-              },
-              rpcUrl: {
-                type: "string",
-                title: "RPC URL",
-                description: "Rootstock testnet RPC endpoint",
-                default: "https://public-node.testnet.rsk.co"
-              },
-              chainId: {
-                type: "number",
-                title: "Chain ID",
-                description: "Rootstock testnet chain ID",
-                default: 31
-              },
-              networkName: {
-                type: "string",
-                title: "Network Name",
-                description: "Network display name",
-                default: "Rootstock Testnet"
-              },
-              explorerUrl: {
-                type: "string",
-                title: "Explorer URL",
-                description: "Block explorer URL",
-                default: "https://explorer.testnet.rootstock.io"
-              },
-              currencySymbol: {
-                type: "string",
-                title: "Currency Symbol",
-                description: "Native currency symbol",
-                default: "tRBTC"
-              }
-            }
-          }, null, 2));
-        }
-        // Handle MCP endpoint
-        else if (req.url?.startsWith('/mcp')) {
-          const transport = new SSEServerTransport('/mcp', res);
-          server.connect(transport).catch((error) => {
-            console.error("Failed to connect SSE transport:", error);
-            res.writeHead(500);
-            res.end('Internal Server Error');
-          });
-        } else {
-          res.writeHead(404);
-          res.end('Not Found');
-        }
-      });
-
-      httpServer.listen(parseInt(port), () => {
-        console.log(`Rootstock MCP Server running on http://localhost:${port}/mcp`);
-      });
-    }).catch((error) => {
-      console.error("Failed to import http module:", error);
-      process.exit(1);
-    });
-  } else {
-    // Stdio transport for local use
-    const transport = new StdioServerTransport();
-    server.connect(transport).catch((error) => {
-      console.error("Failed to start Rootstock MCP Server:", error);
-      process.exit(1);
-    });
-  }
+  // Start the server with stdio transport
+  const transport = new StdioServerTransport();
+  server.connect(transport).catch((error) => {
+    console.error("Failed to start Rootstock MCP Server:", error);
+    process.exit(1);
+  });
 }

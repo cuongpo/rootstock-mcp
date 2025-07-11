@@ -833,7 +833,7 @@ function createStatelessServer({
     }
   );
 
-  return server.server;
+  return server;
 }
 
 // For Smithery deployment - create and start the server

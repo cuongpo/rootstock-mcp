@@ -125,18 +125,19 @@ Users will need to provide:
 
 The timeout issues and "failedToFetchConfigSchema" error you experienced should now be resolved with these fixes.
 
-## Latest Update: Fixed Wallet Loading Errors (Root Cause Found!)
+## Latest Update: Implemented HTTP Transport (Critical Discovery!)
 
-The most recent fix addresses the actual root cause of the failedToFetchConfigSchema error:
-- **Root Cause Discovered**: Server was trying to load placeholder private keys from .env file
-- **Error Details**: `invalid BytesLike value` when loading `"your_private_key_here_64_hex_characters"`
-- **Impact**: Wallet initialization errors during Smithery's tool scanning process
+The most recent fix addresses the fundamental requirement that was missing:
+- **Critical Discovery**: ALL Smithery deployments require HTTP endpoints, not just stdio transport
+- **Root Cause**: Even TypeScript Deploy runs in containers and needs HTTP endpoints on PORT
+- **Missing Requirement**: Server must expose `/mcp` endpoint for Smithery tool scanning
 - **Solution**:
-  1. Enhanced wallet manager to skip placeholder/invalid private keys silently
-  2. Added validation in smithery-server to ignore placeholder config values
-  3. Commented out placeholder values in .env file to prevent loading
-  4. Server now starts cleanly without any wallet-related errors
-- **Result**: Server starts successfully with no environment variables and discovers all 18 tools correctly
+  1. Implemented dual transport: HTTP when PORT is set, stdio for local use
+  2. Added SSEServerTransport for HTTP-based MCP communication
+  3. Created proper HTTP server with `/mcp` endpoint handling
+  4. Added CORS headers for web compatibility
+  5. Server now works with both local stdio and Smithery HTTP deployment
+- **Result**: Server provides the HTTP endpoint that Smithery expects for tool scanning
 
 **Key Changes**:
 

@@ -56,6 +56,7 @@ build:
 - Added `runtime: "typescript"` specification
 - Removed complex Custom Deploy sections (build/start/docker/startCommand)
 - Simplified smithery.yaml to follow TypeScript Deploy format
+- **Fixed package.json module field for Smithery CLI compatibility**
 - Implemented lazy loading (privateKey optional for tool discovery)
 - Server starts without configuration and exposes all 18 tools for discovery
 
@@ -123,36 +124,35 @@ Users will need to provide:
 
 The timeout issues and "failedToFetchConfigSchema" error you experienced should now be resolved with these fixes.
 
-## Latest Update: TypeScript Deploy Configuration
+## Latest Update: Smithery CLI Entry Point Fix
 
 The most recent fix addresses the specific error you encountered:
-- **Error**: `Failed to scan tools list from server: failedToFetchConfigSchema`
-- **Root Cause**: Using incorrect deployment method (Custom Deploy instead of TypeScript Deploy)
+- **Error**: `❌ Build failed: Error: No entry point found in package.json. Please define the "module" field`
+- **Root Cause**: Smithery CLI requires a "module" field in package.json to find the TypeScript entry point
 - **Solution**:
-  1. Switched to TypeScript Deploy method with `runtime: "typescript"`
-  2. Removed ALL custom sections (tools, examples, documentation, etc.)
-  3. Used minimal configuration matching official Smithery docs exactly
+  1. Added `"module": "./src/smithery-server.ts"` to package.json
+  2. Kept minimal TypeScript Deploy configuration with `runtime: "typescript"`
+  3. Verified Smithery CLI can build the project successfully locally
   4. Implemented lazy loading pattern for tool discovery
-- **Result**: Server now uses correct deployment method and exposes all 18 tools for discovery
+- **Result**: Smithery CLI now recognizes the TypeScript entry point and builds successfully
 
-**Key Change**:
+**Key Changes**:
+
+**1. smithery.yaml (simplified to minimal config):**
 ```yaml
-# Before: Complex configuration with tools, examples, etc.
-runtime: "typescript"
-tools:
-  - name: create_wallet
-    description: ...
-examples:
-  - name: Configuration Setup
-    code: |
-      ...
-# 268 lines of configuration
-
+# Before: 268 lines of complex configuration
 # After: Minimal official TypeScript runtime configuration
 runtime: "typescript"
 env:
   NODE_ENV: "production"
-# Only 3 lines - matches official Smithery docs exactly
+```
+
+**2. package.json (added required module field):**
+```json
+{
+  "main": "build/index.js",
+  "module": "./src/smithery-server.ts"
+}
 ```
 
 Your Rootstock MCP server should now deploy successfully to Smithery!

@@ -1,4 +1,4 @@
-# Use Node.js 22 slim to match Smithery's expected pattern
+# Use Node.js 22 slim to match working Hyperion pattern
 FROM node:22-slim
 
 # Set working directory
@@ -7,10 +7,10 @@ WORKDIR /app
 # Copy all files
 COPY . .
 
-# Install dependencies (Smithery expects this pattern)
+# Install dependencies (exact pattern from working Hyperion build)
 RUN if [ -f package.json ]; then npm ci; fi
 
-# Build with Smithery CLI (matches successful Hyperion pattern)
+# Build with Smithery CLI (exact pattern from working Hyperion build)
 RUN npx -y @smithery/cli@1.2.9 build -o .smithery/index.cjs
 
 # Set environment variables

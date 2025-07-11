@@ -1,21 +1,12 @@
-# Minimal Dockerfile for Smithery deployment
+# Ultra minimal Dockerfile - exact match to working Hyperion
 FROM node:22-slim
 
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY package*.json ./
-
-# Install dependencies
-RUN npm ci
-
-# Copy source code
 COPY . .
 
-# Build the project
-RUN npm run build
+RUN if [ -f package.json ]; then npm ci; fi
 
-# Build with Smithery CLI
 RUN npx -y @smithery/cli@1.2.9 build -o .smithery/index.cjs
 
 # Set environment variables

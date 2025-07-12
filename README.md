@@ -8,7 +8,13 @@
 
 The Rootstock MCP Server is a developer- and user-oriented backend service that enables seamless interaction with the Rootstock blockchain using the Model Context Protocol (MCP). This server provides standardized APIs for querying, transacting, and managing assets on Rootstock, making it easy for developers, users, and AI agents to build and integrate with Rootstock-based applications.
 
-## 🌟 Features
+## � Try It Now
+
+**Live Demo on Smithery:**
+- 🔧 **Explore Tools**: [View all available tools](https://smithery.ai/server/@cuongpo/rootstock-mcp-test/tools)
+- 💬 **Interactive Chat**: [Try it in the playground](https://smithery.ai/playground?prompt=connect%20to%20%40cuongpo%2Frootstock-mcp-test)
+
+## �🌟 Features
 
 ### Core Capabilities
 - **Standardized MCP Interface**: Expose Rootstock blockchain operations via MCP endpoints
@@ -368,8 +374,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [Model Context Protocol](https://modelcontextprotocol.io/) for the standardized interface
 - [Ethers.js](https://ethers.org/) for Ethereum interactions
-- The Hyperion blockchain community
-
----
-
-**Made with ❤️ by the Hyperion MCP Team**
+- The Rootstock blockchain community

@@ -33,12 +33,20 @@ function createStatelessServer({
     version: "1.1.0",
   });
 
-  // Lazy initialization - only create clients when needed
+  // Ultra-lazy initialization - defer everything until tools are called
   let rootstockClient: RootstockClient | null = null;
   let walletManager: WalletManager | null = null;
 
+  // Configuration function that validates requirements (similar to fal-image-video-mcp)
+  const ensureConfiguration = (toolName: string) => {
+    if (requiresAuthentication(toolName) && !config?.privateKey) {
+      throw new Error('Configuration required: Please provide a private key to use wallet operations. Configure your private key in the server settings.');
+    }
+  };
+
   const getRootstockClient = () => {
     if (!rootstockClient) {
+      // Only create the client when actually needed - no validation here
       const rootstockConfig: RootstockConfig = {
         rpcUrl: config?.rpcUrl || 'https://public-node.testnet.rsk.co',
         chainId: config?.chainId || 31,
@@ -74,12 +82,6 @@ function createStatelessServer({
     return authRequiredTools.includes(toolName);
   };
 
-  const validateConfiguration = (toolName: string) => {
-    if (requiresAuthentication(toolName) && !config?.privateKey) {
-      throw new Error('Configuration required: Please provide a private key to use wallet operations. Configure your private key in the server settings.');
-    }
-  };
-
   // Create Wallet Tool
   server.tool(
     "create_wallet",
@@ -89,7 +91,7 @@ function createStatelessServer({
     },
     async ({ name }) => {
       try {
-        validateConfiguration('create_wallet');
+        ensureConfiguration('create_wallet');
         const walletInfo = getWalletManager().createWallet(name);
         return {
           content: [
@@ -123,7 +125,7 @@ function createStatelessServer({
     },
     async ({ privateKey, mnemonic, name }) => {
       try {
-        validateConfiguration('import_wallet');
+        ensureConfiguration('import_wallet');
         const walletInfo = getWalletManager().importWallet(privateKey, mnemonic, name);
         return {
           content: [
@@ -277,7 +279,7 @@ function createStatelessServer({
     },
     async ({ to, amount, tokenAddress, gasLimit, gasPrice }) => {
       try {
-        validateConfiguration('send_transaction');
+        ensureConfiguration('send_transaction');
         const client = getRootstockClient();
         const wallet = getWalletManager().getCurrentWallet();
 
@@ -529,7 +531,7 @@ function createStatelessServer({
     },
     async ({ name, symbol, decimals, initialSupply, mintable, gasLimit, gasPrice }) => {
       try {
-        validateConfiguration('deploy_erc20_token');
+        ensureConfiguration('deploy_erc20_token');
         const client = getRootstockClient();
         const wallet = getWalletManager().getCurrentWallet();
 
@@ -631,7 +633,7 @@ function createStatelessServer({
     },
     async ({ tokenAddress, to, amount, gasLimit, gasPrice }) => {
       try {
-        validateConfiguration('mint_tokens');
+        ensureConfiguration('mint_tokens');
         const client = getRootstockClient();
         const wallet = getWalletManager().getCurrentWallet();
 
@@ -687,7 +689,7 @@ function createStatelessServer({
     },
     async ({ name, symbol, mintable, gasLimit, gasPrice }) => {
       try {
-        validateConfiguration('deploy_erc721_token');
+        ensureConfiguration('deploy_erc721_token');
         const client = getRootstockClient();
         const wallet = getWalletManager().getCurrentWallet();
 
@@ -788,7 +790,7 @@ function createStatelessServer({
     },
     async ({ tokenAddress, to, tokenId, tokenURI, gasLimit, gasPrice }) => {
       try {
-        validateConfiguration('mint_nft');
+        ensureConfiguration('mint_nft');
         const client = getRootstockClient();
         const wallet = getWalletManager().getCurrentWallet();
 

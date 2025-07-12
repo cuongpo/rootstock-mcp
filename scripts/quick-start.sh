@@ -152,13 +152,13 @@ show_next_steps() {
     echo "🔧 Integration:"
     echo "- Claude Desktop: See README.md for configuration"
     echo "- Smithery: Use smithery.yaml for marketplace deployment"
-    echo "- Docker: docker build -t hyperion-mcp ."
+    echo "- Docker: docker build -t rootstock-mcp ."
     echo ""
 }
 
 # Function to show help
 show_help() {
-    echo "Hyperion MCP Server Quick Start Script"
+    echo "Rootstock MCP Server Quick Start Script"
     echo ""
     echo "Usage: $0 [OPTIONS]"
     echo ""

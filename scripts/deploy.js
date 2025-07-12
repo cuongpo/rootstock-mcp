@@ -79,7 +79,7 @@ async function main() {
     }
   };
   
-  const outputPath = path.join(process.cwd(), "src/erc20-contracts-hyperion.json");
+  const outputPath = path.join(process.cwd(), "src/erc20-contracts-rootstock.json");
   fs.writeFileSync(outputPath, JSON.stringify(outputData, null, 2));
   
   console.log(`Contract data saved to: ${outputPath}`);

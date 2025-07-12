@@ -4,8 +4,8 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'Hyperion MCP Dashboard',
-  description: 'Web dashboard for Hyperion blockchain interactions',
+  title: 'Rootstock MCP Dashboard',
+  description: 'Web dashboard for Rootstock blockchain interactions',
 }
 
 export default function RootLayout({

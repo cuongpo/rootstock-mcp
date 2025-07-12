@@ -48,7 +48,7 @@ export function WalletCard({ wallet, isActive, onSelect }: WalletCardProps) {
         <div>
           <p className="text-xs text-gray-500">Balance</p>
           <p className="text-lg font-semibold text-gray-900">
-            {wallet.balance} ETH
+            {wallet.balance} tRBTC
           </p>
         </div>
       </div>

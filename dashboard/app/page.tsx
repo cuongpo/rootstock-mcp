@@ -33,7 +33,7 @@ export default function Dashboard() {
   const loadNetworkInfo = async () => {
     // This would connect to your MCP server
     setNetworkInfo({
-      networkName: 'Hyperion',
+      networkName: 'Rootstock',
       chainId: 1,
       blockNumber: 12345678,
       gasPrice: '20',
@@ -54,7 +54,7 @@ export default function Dashboard() {
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
         <p className="mt-1 text-sm text-gray-600">
-          Manage your Hyperion blockchain interactions
+          Manage your Rootstock blockchain interactions
         </p>
       </div>
 

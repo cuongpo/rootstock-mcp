@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Hyperion MCP Server - Non-Docker Deployment Script
-echo "🚀 Deploying Hyperion MCP Server to Smithery (No Docker)"
+# Rootstock MCP Server - Non-Docker Deployment Script
+echo "🚀 Deploying Rootstock MCP Server to Smithery (No Docker)"
 
 # Ensure we're in the right directory
 cd "$(dirname "$0")"
@@ -32,7 +32,7 @@ timeout 5s node build/smithery-server.js || echo "✅ Server starts correctly"
 echo "🎉 Ready for Smithery deployment!"
 echo ""
 echo "Use these settings in Smithery:"
-echo "  Repository: https://github.com/cuongpo/hyperion-mcp-server"
+echo "  Repository: https://github.com/cuongpo/rootstock-mcp-server"
 echo "  Base Directory: ."
 echo "  Entry Point: src/smithery-server.ts"
 echo "  Build Command: npm run build"

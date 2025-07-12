@@ -234,9 +234,9 @@ function showUsageExamples() {
   console.log('Add this to your claude_desktop_config.json:');
   console.log(`{
   "mcpServers": {
-    "hyperion-mcp": {
+    "rootstock-mcp": {
       "command": "node",
-      "args": ["/path/to/hyperion-mcp-server/build/index.js"],
+      "args": ["/path/to/rootstock-mcp-server/build/index.js"],
       "env": {
         "ROOTSTOCK_RPC_URL": "https://eth.llamarpc.com",
         "ROOTSTOCK_NETWORK_NAME": "Ethereum Mainnet"

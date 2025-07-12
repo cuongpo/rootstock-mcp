@@ -115,7 +115,7 @@ test-results.xml
 # Docker
 .dockerignore
 
-# Hyperion specific
+# Rootstock specific
 wallets/
 keys/
 *.key

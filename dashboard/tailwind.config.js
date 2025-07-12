@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        hyperion: {
+        rootstock: {
           50: '#f0f9ff',
           100: '#e0f2fe',
           200: '#bae6fd',

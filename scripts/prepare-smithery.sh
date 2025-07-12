@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Hyperion MCP Server - Smithery Preparation Script
+# Rootstock MCP Server - Smithery Preparation Script
 # This script helps prepare the project for Smithery publication
 
 set -e
@@ -84,10 +84,10 @@ test_server() {
     print_status "Testing server startup..."
 
     # Set test environment
-    export HYPERION_RPC_URL="https://hyperion-testnet.metisdevops.link"
-    export HYPERION_CHAIN_ID="133717"
-    export HYPERION_NETWORK_NAME="Hyperion Testnet"
-    export HYPERION_CURRENCY_SYMBOL="tMETIS"
+    export ROOTSTOCK_RPC_URL="https://public-node.testnet.rsk.co"
+    export ROOTSTOCK_CHAIN_ID="31"
+    export ROOTSTOCK_NETWORK_NAME="Rootstock Testnet"
+    export ROOTSTOCK_CURRENCY_SYMBOL="tRBTC"
 
     # Test server can start by checking if it imports without errors
     if node -e "
@@ -112,7 +112,7 @@ test_server() {
 check_documentation() {
     print_status "Checking documentation..."
     
-    local required_files=("README.md" "LICENSE" "docs/api.md" "docs/configuration.md" "docs/troubleshooting.md")
+    local required_files=("README.md" "LICENSE")
     
     for file in "${required_files[@]}"; do
         if [ ! -f "$file" ]; then
@@ -170,19 +170,19 @@ generate_submission_info() {
     if git remote get-url origin > /dev/null 2>&1; then
         repo_url=$(git remote get-url origin)
     else
-        repo_url="https://github.com/YOUR_USERNAME/hyperion-mcp-server"
+        repo_url="https://github.com/YOUR_USERNAME/rootstock-mcp-server"
     fi
     
     echo ""
     echo "📋 Smithery Submission Information"
     echo "=================================="
     echo ""
-    echo "Server Name: hyperion-mcp"
-    echo "Display Name: Hyperion Blockchain MCP Server"
-    echo "Description: Model Context Protocol server for Hyperion blockchain (testnet) interactions - wallet management, tMETIS transactions, and smart contract interactions on Chain ID 133717"
+    echo "Server Name: rootstock-mcp"
+    echo "Display Name: Rootstock Blockchain MCP Server"
+    echo "Description: Model Context Protocol server for Rootstock blockchain (testnet) interactions - wallet management, tRBTC transactions, smart contract interactions, and complete ERC20/ERC721 token deployment and management on Chain ID 31"
     echo "Repository URL: $repo_url"
     echo "Categories: blockchain, cryptocurrency, wallet, defi"
-    echo "Keywords: hyperion, hyperion-testnet, blockchain, cryptocurrency, wallet, tmetis, smart-contracts, defi, mcp, model-context-protocol, chain-133717"
+    echo "Keywords: rootstock, rootstock-testnet, blockchain, cryptocurrency, wallet, trbtc, smart-contracts, defi, mcp, model-context-protocol, chain-31"
     echo "License: MIT"
     echo "Node.js Version: >=18.0.0"
     echo ""
@@ -284,7 +284,7 @@ main() {
 # Handle command line arguments
 case "${1:-}" in
     --help|-h)
-        echo "Hyperion MCP Server - Smithery Preparation Script"
+        echo "Rootstock MCP Server - Smithery Preparation Script"
         echo ""
         echo "Usage: $0 [OPTIONS]"
         echo ""

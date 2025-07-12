@@ -1,7 +1,7 @@
 {
-  "name": "hyperion-mcp-dashboard",
+  "name": "rootstock-mcp-dashboard",
   "version": "1.0.0",
-  "description": "Web dashboard for Hyperion MCP Server",
+  "description": "Web dashboard for Rootstock MCP Server",
   "private": true,
   "scripts": {
     "dev": "next dev",

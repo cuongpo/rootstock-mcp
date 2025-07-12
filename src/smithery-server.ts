@@ -33,7 +33,7 @@ function createStatelessServer({
     version: "1.1.0",
   });
 
-  // Initialize configuration (following hyperion-mcp-server pattern)
+  // Initialize configuration (following rootstock-mcp-server pattern)
   const rootstockConfig: RootstockConfig = {
     rpcUrl: config.rpcUrl,
     chainId: config.chainId,
@@ -42,7 +42,7 @@ function createStatelessServer({
     currencySymbol: config.currencySymbol,
   };
 
-  // Initialize clients (following hyperion-mcp-server pattern)
+  // Initialize clients (following rootstock-mcp-server pattern)
   const rootstockClient = new RootstockClient(rootstockConfig);
   const walletManager = new WalletManager();
 
@@ -269,7 +269,7 @@ function createStatelessServer({
     },
     async ({ to, amount, tokenAddress, gasLimit, gasPrice }) => {
       try {
-        // Check if wallet is configured (following hyperion-mcp-server pattern)
+        // Check if wallet is configured (following rootstock-mcp-server pattern)
         let wallet;
         try {
           wallet = walletManager.getCurrentWallet();
@@ -536,7 +536,7 @@ function createStatelessServer({
     },
     async ({ name, symbol, decimals, initialSupply, mintable, gasLimit, gasPrice }) => {
       try {
-        // Check if wallet is configured (following hyperion-mcp-server pattern)
+        // Check if wallet is configured (following rootstock-mcp-server pattern)
         const wallet = getWalletWithErrorHandling();
 
         const result = await rootstockClient.deployERC20Token(
@@ -636,7 +636,7 @@ function createStatelessServer({
     },
     async ({ tokenAddress, to, amount, gasLimit, gasPrice }) => {
       try {
-        // Check if wallet is configured (following hyperion-mcp-server pattern)
+        // Check if wallet is configured (following rootstock-mcp-server pattern)
         const wallet = getWalletWithErrorHandling();
 
         const result = await rootstockClient.mintTokens(
@@ -691,7 +691,7 @@ function createStatelessServer({
     },
     async ({ name, symbol, mintable, gasLimit, gasPrice }) => {
       try {
-        // Check if wallet is configured (following hyperion-mcp-server pattern)
+        // Check if wallet is configured (following rootstock-mcp-server pattern)
         const wallet = getWalletWithErrorHandling();
 
         const result = await rootstockClient.deployERC721Token(
@@ -790,7 +790,7 @@ function createStatelessServer({
     },
     async ({ tokenAddress, to, tokenId, tokenURI, gasLimit, gasPrice }) => {
       try {
-        // Check if wallet is configured (following hyperion-mcp-server pattern)
+        // Check if wallet is configured (following rootstock-mcp-server pattern)
         const wallet = getWalletWithErrorHandling();
 
         const result = await rootstockClient.mintNFT(
@@ -846,15 +846,15 @@ const isDirectExecution = process.argv[1] && (
 );
 
 if (isDirectExecution) {
-  const privateKey = process.env.ROOTSTOCK_PRIVATE_KEYS || process.env.HYPERION_PRIVATE_KEYS;
+  const privateKey = process.env.ROOTSTOCK_PRIVATE_KEYS;
 
   const defaultConfig = {
     privateKey: privateKey ? privateKey.split(',')[0] : undefined, // Use first private key if multiple provided
-    rpcUrl: process.env.ROOTSTOCK_RPC_URL || process.env.HYPERION_RPC_URL || 'https://public-node.testnet.rsk.co',
-    chainId: parseInt(process.env.ROOTSTOCK_CHAIN_ID || process.env.HYPERION_CHAIN_ID || '31'),
-    networkName: process.env.ROOTSTOCK_NETWORK_NAME || process.env.HYPERION_NETWORK_NAME || 'Rootstock Testnet',
-    explorerUrl: process.env.ROOTSTOCK_EXPLORER_URL || process.env.HYPERION_EXPLORER_URL || 'https://explorer.testnet.rootstock.io',
-    currencySymbol: process.env.ROOTSTOCK_CURRENCY_SYMBOL || process.env.HYPERION_CURRENCY_SYMBOL || 'tRBTC',
+    rpcUrl: process.env.ROOTSTOCK_RPC_URL || 'https://public-node.testnet.rsk.co',
+    chainId: parseInt(process.env.ROOTSTOCK_CHAIN_ID || '31'),
+    networkName: process.env.ROOTSTOCK_NETWORK_NAME || 'Rootstock Testnet',
+    explorerUrl: process.env.ROOTSTOCK_EXPLORER_URL || 'https://explorer.testnet.rootstock.io',
+    currencySymbol: process.env.ROOTSTOCK_CURRENCY_SYMBOL || 'tRBTC',
     debug: process.env.DEBUG === 'true' || false,
   };
 
@@ -872,7 +872,7 @@ if (isDirectExecution) {
 function createServer(options: { sessionId?: string; config?: any } = {}) {
   const { sessionId, config } = options;
 
-  // Set up default configuration with Smithery config override (following hyperion pattern)
+  // Set up default configuration with Smithery config override (following rootstock pattern)
   const serverConfig: z.infer<typeof configSchema> = {
     privateKey: config?.privateKey,
     rpcUrl: config?.rpcUrl || 'https://public-node.testnet.rsk.co',

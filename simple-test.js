@@ -4,7 +4,7 @@
  * Simple test to demonstrate MCP server functionality
  */
 
-import { RootstockClient } from './build/hyperion-client.js';
+import { RootstockClient } from './build/rootstock-client.js';
 import { WalletManager } from './build/wallet-manager.js';
 
 async function testBalanceDirectly() {
@@ -157,7 +157,7 @@ async function demonstrateMCPTools() {
   console.log('📱 Claude Desktop Integration:');
   console.log(`{
   "mcpServers": {
-    "hyperion-mcp": {
+    "rootstock-mcp": {
       "command": "node",
       "args": ["build/index.js"],
       "env": {
@@ -169,7 +169,7 @@ async function demonstrateMCPTools() {
 }\n`);
 
   console.log('🐳 Docker Usage:');
-  console.log('docker run -e ROOTSTOCK_RPC_URL=your_url hyperion-mcp\n');
+  console.log('docker run -e ROOTSTOCK_RPC_URL=your_url rootstock-mcp\n');
 
   console.log('🌐 Web Dashboard:');
   console.log('cd dashboard && npm run dev\n');

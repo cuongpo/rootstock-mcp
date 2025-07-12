@@ -21,7 +21,7 @@ const erc721Contracts = {
 };
 
 // Write to the source directory
-const outputPath = path.join(__dirname, '../src/erc721-contracts-hyperion.json');
+const outputPath = path.join(__dirname, '../src/erc721-contracts-rootstock.json');
 fs.writeFileSync(outputPath, JSON.stringify(erc721Contracts, null, 2));
 
 console.log('ERC721 contracts extracted successfully to:', outputPath);

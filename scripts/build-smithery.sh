@@ -3,7 +3,7 @@
 # Build script for Smithery deployment
 set -e
 
-echo "🏗️  Building Hyperion MCP Server for Smithery..."
+echo "🏗️  Building Rootstock MCP Server for Smithery..."
 
 # Clean previous builds
 echo "🧹 Cleaning previous builds..."

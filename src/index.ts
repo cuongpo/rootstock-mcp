@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * Hyperion MCP Server
- * Model Context Protocol server for Hyperion blockchain interactions
+ * Rootstock MCP Server
+ * Model Context Protocol server for Rootstock blockchain interactions
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
@@ -46,11 +46,11 @@ class RootstockMCPServer {
   constructor() {
     // Initialize configuration
     const config: RootstockConfig = {
-      rpcUrl: process.env.ROOTSTOCK_RPC_URL || process.env.HYPERION_RPC_URL || 'https://public-node.testnet.rsk.co',
-      chainId: process.env.ROOTSTOCK_CHAIN_ID ? parseInt(process.env.ROOTSTOCK_CHAIN_ID, 10) : (process.env.HYPERION_CHAIN_ID ? parseInt(process.env.HYPERION_CHAIN_ID, 10) : 31),
-      networkName: process.env.ROOTSTOCK_NETWORK_NAME || process.env.HYPERION_NETWORK_NAME || 'Rootstock Testnet',
-      explorerUrl: process.env.ROOTSTOCK_EXPLORER_URL || process.env.HYPERION_EXPLORER_URL || 'https://explorer.testnet.rootstock.io',
-      currencySymbol: process.env.ROOTSTOCK_CURRENCY_SYMBOL || process.env.HYPERION_CURRENCY_SYMBOL || 'tRBTC',
+      rpcUrl: process.env.ROOTSTOCK_RPC_URL || 'https://public-node.testnet.rsk.co',
+      chainId: process.env.ROOTSTOCK_CHAIN_ID ? parseInt(process.env.ROOTSTOCK_CHAIN_ID, 10) : 31,
+      networkName: process.env.ROOTSTOCK_NETWORK_NAME || 'Rootstock Testnet',
+      explorerUrl: process.env.ROOTSTOCK_EXPLORER_URL || 'https://explorer.testnet.rootstock.io',
+      currencySymbol: process.env.ROOTSTOCK_CURRENCY_SYMBOL || 'tRBTC',
     };
 
     // Initialize clients

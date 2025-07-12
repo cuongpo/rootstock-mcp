@@ -127,22 +127,22 @@ function showRootstockIntegrationGuide() {
 
   console.log('🔧 1. Environment Setup:');
   console.log('Create .env file with:');
-  console.log(`ROOTSTOCK_RPC_URL=https://hyperion-testnet.metisdevops.link
-ROOTSTOCK_CHAIN_ID=133717
+  console.log(`ROOTSTOCK_RPC_URL=https://public-node.testnet.rsk.co
+ROOTSTOCK_CHAIN_ID=31
 ROOTSTOCK_NETWORK_NAME=Rootstock Testnet
 ROOTSTOCK_CURRENCY_SYMBOL=tRBTC
-ROOTSTOCK_EXPLORER_URL=https://hyperion-testnet-explorer.metisdevops.link\n`);
+ROOTSTOCK_EXPLORER_URL=https://explorer.testnet.rootstock.io\n`);
 
   console.log('🤖 2. Claude Desktop Integration:');
   console.log('Add to claude_desktop_config.json:');
   console.log(`{
   "mcpServers": {
-    "hyperion-mcp": {
+    "rootstock-mcp": {
       "command": "node",
-      "args": ["/path/to/hyperion-mcp-server/build/index.js"],
+      "args": ["/path/to/rootstock-mcp-server/build/index.js"],
       "env": {
-        "ROOTSTOCK_RPC_URL": "https://hyperion-testnet.metisdevops.link",
-        "ROOTSTOCK_CHAIN_ID": "133717",
+        "ROOTSTOCK_RPC_URL": "https://public-node.testnet.rsk.co",
+        "ROOTSTOCK_CHAIN_ID": "31",
         "ROOTSTOCK_NETWORK_NAME": "Rootstock Testnet",
         "ROOTSTOCK_CURRENCY_SYMBOL": "tRBTC"
       }
@@ -185,9 +185,9 @@ ROOTSTOCK_EXPLORER_URL=https://hyperion-testnet-explorer.metisdevops.link\n`);
   console.log('• Transaction monitoring and alerts\n');
 
   console.log('🔗 6. Useful Links:');
-  console.log('• Testnet Explorer: https://hyperion-testnet-explorer.metisdevops.link');
-  console.log('• RPC Endpoint: https://hyperion-testnet.metisdevops.link');
-  console.log('• Chain ID: 133717');
+  console.log('• Testnet Explorer: https://explorer.testnet.rootstock.io');
+  console.log('• RPC Endpoint: https://public-node.testnet.rsk.co');
+  console.log('• Chain ID: 31');
   console.log('• Currency: tRBTC\n');
 }
 

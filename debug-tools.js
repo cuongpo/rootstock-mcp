@@ -20,11 +20,11 @@ class ToolsDebugger {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: {
         ...process.env,
-        ROOTSTOCK_RPC_URL: 'https://hyperion-testnet.metisdevops.link',
-        ROOTSTOCK_CHAIN_ID: '133717',
+        ROOTSTOCK_RPC_URL: 'https://public-node.testnet.rsk.co',
+        ROOTSTOCK_CHAIN_ID: '31',
         ROOTSTOCK_NETWORK_NAME: 'Rootstock Testnet',
         ROOTSTOCK_CURRENCY_SYMBOL: 'tRBTC',
-        ROOTSTOCK_EXPLORER_URL: 'https://hyperion-testnet-explorer.metisdevops.link'
+        ROOTSTOCK_EXPLORER_URL: 'https://explorer.testnet.rootstock.io'
       }
     });
 

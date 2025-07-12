@@ -109,7 +109,7 @@ Add to your MCP client configuration:
 ```json
 {
   "mcpServers": {
-    "hyperion-mcp": {
+    "rootstock-mcp": {
       "command": "node",
       "args": ["path/to/rootstock-mcp-server/build/index.js"],
       "env": {
@@ -307,7 +307,7 @@ Mint tokens (only for mintable tokens).
 rootstock-mcp-server/
 ├── src/
 │   ├── index.ts              # Main MCP server
-│   ├── hyperion-client.ts    # Blockchain client
+│   ├── rootstock-client.ts   # Blockchain client
 │   ├── wallet-manager.ts     # Wallet management
 │   └── types.ts              # Type definitions
 ├── build/                    # Compiled JavaScript

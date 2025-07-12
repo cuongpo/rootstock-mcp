@@ -26,7 +26,7 @@ export const configSchema = z.object({
 function createStatelessServer({
   config,
 }: {
-  config?: Partial<z.infer<typeof configSchema>>;
+  config: z.infer<typeof configSchema>;
 }) {
   const server = new McpServer({
     name: "Rootstock Blockchain MCP Server",
@@ -35,11 +35,11 @@ function createStatelessServer({
 
   // Initialize configuration (following hyperion-mcp-server pattern)
   const rootstockConfig: RootstockConfig = {
-    rpcUrl: config?.rpcUrl || 'https://public-node.testnet.rsk.co',
-    chainId: config?.chainId || 31,
-    networkName: config?.networkName || 'Rootstock Testnet',
-    explorerUrl: config?.explorerUrl || 'https://explorer.testnet.rootstock.io',
-    currencySymbol: config?.currencySymbol || 'tRBTC',
+    rpcUrl: config.rpcUrl,
+    chainId: config.chainId,
+    networkName: config.networkName,
+    explorerUrl: config.explorerUrl,
+    currencySymbol: config.currencySymbol,
   };
 
   // Initialize clients (following hyperion-mcp-server pattern)
@@ -47,7 +47,7 @@ function createStatelessServer({
   const walletManager = new WalletManager();
 
   // Import wallet from config if privateKey is provided
-  if (config?.privateKey) {
+  if (config.privateKey) {
     try {
       walletManager.importWallet(config.privateKey, undefined, 'Smithery Wallet');
     } catch (error) {
@@ -834,7 +834,7 @@ function createStatelessServer({
     }
   );
 
-  return server;
+  return server.server;
 }
 
 // For Smithery deployment - create and start the server
@@ -872,17 +872,16 @@ if (isDirectExecution) {
 function createServer(options: { sessionId?: string; config?: any } = {}) {
   const { sessionId, config } = options;
 
-  // Set up default configuration with Smithery config override
-  // Only include properties that are actually provided to avoid validation issues
-  const serverConfig: Partial<z.infer<typeof configSchema>> = {};
-
-  if (config?.privateKey) serverConfig.privateKey = config.privateKey;
-  if (config?.rpcUrl) serverConfig.rpcUrl = config.rpcUrl;
-  if (config?.chainId) serverConfig.chainId = config.chainId;
-  if (config?.networkName) serverConfig.networkName = config.networkName;
-  if (config?.explorerUrl) serverConfig.explorerUrl = config.explorerUrl;
-  if (config?.currencySymbol) serverConfig.currencySymbol = config.currencySymbol;
-  if (config?.debug !== undefined) serverConfig.debug = config.debug;
+  // Set up default configuration with Smithery config override (following hyperion pattern)
+  const serverConfig: z.infer<typeof configSchema> = {
+    privateKey: config?.privateKey,
+    rpcUrl: config?.rpcUrl || 'https://public-node.testnet.rsk.co',
+    chainId: config?.chainId || 31,
+    networkName: config?.networkName || 'Rootstock Testnet',
+    explorerUrl: config?.explorerUrl || 'https://explorer.testnet.rootstock.io',
+    currencySymbol: config?.currencySymbol || 'tRBTC',
+    debug: config?.debug || false,
+  };
 
   // Create and return the server instance
   return createStatelessServer({ config: serverConfig });

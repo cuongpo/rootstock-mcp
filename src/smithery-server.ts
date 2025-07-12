@@ -33,53 +33,46 @@ function createStatelessServer({
     version: "1.1.0",
   });
 
-  // Ultra-lazy initialization - defer everything until tools are called
-  let rootstockClient: RootstockClient | null = null;
-  let walletManager: WalletManager | null = null;
-
-  // Configuration function that validates requirements (similar to fal-image-video-mcp)
-  const ensureConfiguration = (toolName: string) => {
-    if (requiresAuthentication(toolName) && !config?.privateKey) {
-      throw new Error('Configuration required: Please provide a private key to use wallet operations. Configure your private key in the server settings.');
-    }
+  // Initialize configuration (following hyperion-mcp-server pattern)
+  const rootstockConfig: RootstockConfig = {
+    rpcUrl: config?.rpcUrl || 'https://public-node.testnet.rsk.co',
+    chainId: config?.chainId || 31,
+    networkName: config?.networkName || 'Rootstock Testnet',
+    explorerUrl: config?.explorerUrl || 'https://explorer.testnet.rootstock.io',
+    currencySymbol: config?.currencySymbol || 'tRBTC',
   };
 
-  const getRootstockClient = () => {
-    if (!rootstockClient) {
-      // Only create the client when actually needed - no validation here
-      const rootstockConfig: RootstockConfig = {
-        rpcUrl: config?.rpcUrl || 'https://public-node.testnet.rsk.co',
-        chainId: config?.chainId || 31,
-        networkName: config?.networkName || 'Rootstock Testnet',
-        explorerUrl: config?.explorerUrl || 'https://explorer.testnet.rootstock.io',
-        currencySymbol: config?.currencySymbol || 'tRBTC',
-      };
-      rootstockClient = new RootstockClient(rootstockConfig);
-    }
-    return rootstockClient;
-  };
+  // Initialize clients (following hyperion-mcp-server pattern)
+  const rootstockClient = new RootstockClient(rootstockConfig);
+  const walletManager = new WalletManager();
 
-  const getWalletManager = () => {
-    if (!walletManager) {
-      walletManager = new WalletManager();
-      // Import wallet from config if privateKey is provided
-      if (config?.privateKey) {
-        try {
-          walletManager.importWallet(config.privateKey, undefined, 'Smithery Wallet');
-        } catch (error) {
-          console.error('Failed to import wallet from config:', error);
-        }
-      }
+  // Import wallet from config if privateKey is provided
+  if (config?.privateKey) {
+    try {
+      walletManager.importWallet(config.privateKey, undefined, 'Smithery Wallet');
+    } catch (error) {
+      console.error('Failed to import wallet from config:', error);
     }
-    return walletManager;
-  };
+  }
 
-  const requiresAuthentication = (toolName: string): boolean => {
-    const authRequiredTools = [
-      'create_wallet', 'import_wallet', 'send_transaction',
-      'deploy_erc20_token', 'mint_tokens', 'deploy_erc721_token', 'mint_nft'
-    ];
-    return authRequiredTools.includes(toolName);
+  // Helper function to check if wallet is configured and return helpful error message
+  const getWalletWithErrorHandling = () => {
+    try {
+      return walletManager.getCurrentWallet();
+    } catch (error) {
+      throw new Error(
+        `❌ No wallet configured for this operation!\n\n` +
+        `To use wallet operations, you need to configure your private key:\n\n` +
+        `🔧 **Via Smithery Interface (Recommended):**\n` +
+        `1. Click "Save & Connect" below\n` +
+        `2. Enter your funded private key for Rootstock testnet\n` +
+        `3. Example: 0x1234567890123456789012345678901234567890123456789012345678901234\n\n` +
+        `🔧 **Alternative Methods:**\n` +
+        `• Use 'import_wallet' tool to add your private key\n` +
+        `• Set ROOTSTOCK_PRIVATE_KEY environment variable\n\n` +
+        `Original error: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   };
 
   // Create Wallet Tool
@@ -91,8 +84,7 @@ function createStatelessServer({
     },
     async ({ name }) => {
       try {
-        ensureConfiguration('create_wallet');
-        const walletInfo = getWalletManager().createWallet(name);
+        const walletInfo = walletManager.createWallet(name);
         return {
           content: [
             {
@@ -125,8 +117,7 @@ function createStatelessServer({
     },
     async ({ privateKey, mnemonic, name }) => {
       try {
-        ensureConfiguration('import_wallet');
-        const walletInfo = getWalletManager().importWallet(privateKey, mnemonic, name);
+        const walletInfo = walletManager.importWallet(privateKey, mnemonic, name);
         return {
           content: [
             {
@@ -156,8 +147,8 @@ function createStatelessServer({
     async () => {
       try {
         // This tool doesn't require authentication - it can list empty wallets
-        const wallets = getWalletManager().listWallets();
-        const currentAddress = getWalletManager().getCurrentAddress();
+        const wallets = walletManager.listWallets();
+        const currentAddress = walletManager.getCurrentAddress();
 
         let response = `Available Wallets (${wallets.length}):\n\n`;
 
@@ -197,9 +188,8 @@ function createStatelessServer({
     },
     async ({ address, tokenAddress }) => {
       try {
-        const client = getRootstockClient();
         if (tokenAddress) {
-          const tokenBalance = await client.getTokenBalance(address, tokenAddress);
+          const tokenBalance = await rootstockClient.getTokenBalance(address, tokenAddress);
           return {
             content: [
               {
@@ -209,12 +199,12 @@ function createStatelessServer({
             ],
           };
         } else {
-          const balance = await client.getBalance(address);
+          const balance = await rootstockClient.getBalance(address);
           return {
             content: [
               {
                 type: "text",
-                text: `Native Balance:\n\nAddress: ${address}\nBalance: ${balance} ${client.getCurrencySymbol()}`,
+                text: `Native Balance:\n\nAddress: ${address}\nBalance: ${balance} ${rootstockClient.getCurrencySymbol()}`,
               },
             ],
           };
@@ -241,15 +231,15 @@ function createStatelessServer({
     },
     async ({ address }) => {
       try {
-        const client = getRootstockClient();
-        const balance = await client.getBalance(address);
-        const networkInfo = await client.getNetworkInfo();
+        // This tool doesn't require authentication
+        const balance = await rootstockClient.getBalance(address);
+        const networkInfo = await rootstockClient.getNetworkInfo();
 
         return {
           content: [
             {
               type: "text",
-              text: `Native tRBTC Balance:\n\nAddress: ${address}\nBalance: ${balance} ${client.getCurrencySymbol()}\nNetwork: ${networkInfo.networkName} (Chain ID: ${networkInfo.chainId})\nBlock: ${networkInfo.blockNumber}`,
+              text: `Native tRBTC Balance:\n\nAddress: ${address}\nBalance: ${balance} ${rootstockClient.getCurrencySymbol()}\nNetwork: ${networkInfo.networkName} (Chain ID: ${networkInfo.chainId})\nBlock: ${networkInfo.blockNumber}`,
             },
           ],
         };
@@ -279,13 +269,33 @@ function createStatelessServer({
     },
     async ({ to, amount, tokenAddress, gasLimit, gasPrice }) => {
       try {
-        ensureConfiguration('send_transaction');
-        const client = getRootstockClient();
-        const wallet = getWalletManager().getCurrentWallet();
+        // Check if wallet is configured (following hyperion-mcp-server pattern)
+        let wallet;
+        try {
+          wallet = walletManager.getCurrentWallet();
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `❌ No wallet configured for transactions!\n\n` +
+                  `To send transactions, you need to configure your private key:\n\n` +
+                  `🔧 **Via Smithery Interface (Recommended):**\n` +
+                  `1. Click "Save & Connect" below\n` +
+                  `2. Enter your funded private key for Rootstock testnet\n` +
+                  `3. Example: 0x1234567890123456789012345678901234567890123456789012345678901234\n\n` +
+                  `🔧 **Alternative Methods:**\n` +
+                  `• Use 'import_wallet' tool to add your private key\n` +
+                  `• Set ROOTSTOCK_PRIVATE_KEY environment variable\n\n` +
+                  `Original error: ${error instanceof Error ? error.message : String(error)}`,
+              },
+            ],
+          };
+        }
 
         let result;
         if (tokenAddress) {
-          result = await client.sendTokenTransaction(
+          result = await rootstockClient.sendTokenTransaction(
             wallet,
             tokenAddress,
             to,
@@ -294,7 +304,7 @@ function createStatelessServer({
             gasPrice
           );
         } else {
-          result = await client.sendTransaction(
+          result = await rootstockClient.sendTransaction(
             wallet,
             to,
             amount,
@@ -331,8 +341,7 @@ function createStatelessServer({
     {},
     async () => {
       try {
-        const client = getRootstockClient();
-        const networkInfo = await client.getNetworkInfo();
+        const networkInfo = await rootstockClient.getNetworkInfo();
         return {
           content: [
             {
@@ -363,8 +372,7 @@ function createStatelessServer({
     },
     async ({ hash }) => {
       try {
-        const client = getRootstockClient();
-        const transaction = await client.getTransaction(hash);
+        const transaction = await rootstockClient.getTransaction(hash);
         return {
           content: [
             {
@@ -396,8 +404,7 @@ function createStatelessServer({
     },
     async ({ blockNumber, blockHash }) => {
       try {
-        const client = getRootstockClient();
-        const block = await client.getBlock(blockNumber, blockHash);
+        const block = await rootstockClient.getBlock(blockNumber, blockHash);
         return {
           content: [
             {
@@ -430,13 +437,12 @@ function createStatelessServer({
     },
     async ({ to, value, data }) => {
       try {
-        const client = getRootstockClient();
-        const gasEstimate = await client.estimateGas(to, value, data);
+        const gasEstimate = await rootstockClient.estimateGas(to, value, data);
         return {
           content: [
             {
               type: "text",
-              text: `Gas Estimation:\n\nEstimated Gas: ${gasEstimate.gasLimit}\nGas Price: ${gasEstimate.gasPrice}\nEstimated Cost: ${gasEstimate.estimatedCost} ${client.getCurrencySymbol()}`,
+              text: `Gas Estimation:\n\nEstimated Gas: ${gasEstimate.gasLimit}\nGas Price: ${gasEstimate.gasPrice}\nEstimated Cost: ${gasEstimate.estimatedCost} ${rootstockClient.getCurrencySymbol()}`,
             },
           ],
         };
@@ -492,9 +498,8 @@ function createStatelessServer({
     {},
     async () => {
       try {
-        const manager = getWalletManager();
-        const currentAddress = manager.getCurrentAddress();
-        const wallet = manager.getCurrentWallet();
+        const currentAddress = walletManager.getCurrentAddress();
+        const wallet = walletManager.getCurrentWallet();
         return {
           content: [
             {
@@ -531,11 +536,10 @@ function createStatelessServer({
     },
     async ({ name, symbol, decimals, initialSupply, mintable, gasLimit, gasPrice }) => {
       try {
-        ensureConfiguration('deploy_erc20_token');
-        const client = getRootstockClient();
-        const wallet = getWalletManager().getCurrentWallet();
+        // Check if wallet is configured (following hyperion-mcp-server pattern)
+        const wallet = getWalletWithErrorHandling();
 
-        const result = await client.deployERC20Token(
+        const result = await rootstockClient.deployERC20Token(
           wallet,
           name,
           symbol,
@@ -546,7 +550,7 @@ function createStatelessServer({
           gasPrice
         );
 
-        const explorerUrl = client.getExplorerUrl();
+        const explorerUrl = rootstockClient.getExplorerUrl();
         return {
           content: [
             {
@@ -588,9 +592,8 @@ function createStatelessServer({
     },
     async ({ tokenAddress }) => {
       try {
-        const client = getRootstockClient();
-        const result = await client.getTokenInfo(tokenAddress);
-        const explorerUrl = client.getExplorerUrl();
+        const result = await rootstockClient.getTokenInfo(tokenAddress);
+        const explorerUrl = rootstockClient.getExplorerUrl();
 
         return {
           content: [
@@ -633,11 +636,10 @@ function createStatelessServer({
     },
     async ({ tokenAddress, to, amount, gasLimit, gasPrice }) => {
       try {
-        ensureConfiguration('mint_tokens');
-        const client = getRootstockClient();
-        const wallet = getWalletManager().getCurrentWallet();
+        // Check if wallet is configured (following hyperion-mcp-server pattern)
+        const wallet = getWalletWithErrorHandling();
 
-        const result = await client.mintTokens(
+        const result = await rootstockClient.mintTokens(
           wallet,
           tokenAddress,
           to,
@@ -646,7 +648,7 @@ function createStatelessServer({
           gasPrice
         );
 
-        const explorerUrl = client.getExplorerUrl();
+        const explorerUrl = rootstockClient.getExplorerUrl();
         return {
           content: [
             {
@@ -689,11 +691,10 @@ function createStatelessServer({
     },
     async ({ name, symbol, mintable, gasLimit, gasPrice }) => {
       try {
-        ensureConfiguration('deploy_erc721_token');
-        const client = getRootstockClient();
-        const wallet = getWalletManager().getCurrentWallet();
+        // Check if wallet is configured (following hyperion-mcp-server pattern)
+        const wallet = getWalletWithErrorHandling();
 
-        const result = await client.deployERC721Token(
+        const result = await rootstockClient.deployERC721Token(
           wallet,
           name,
           symbol,
@@ -702,7 +703,7 @@ function createStatelessServer({
           gasPrice
         );
 
-        const explorerUrl = client.getExplorerUrl();
+        const explorerUrl = rootstockClient.getExplorerUrl();
         return {
           content: [
             {
@@ -743,9 +744,8 @@ function createStatelessServer({
     },
     async ({ tokenAddress, tokenId }) => {
       try {
-        const client = getRootstockClient();
-        const result = await client.getNFTInfo(tokenAddress, tokenId);
-        const explorerUrl = client.getExplorerUrl();
+        const result = await rootstockClient.getNFTInfo(tokenAddress, tokenId);
+        const explorerUrl = rootstockClient.getExplorerUrl();
 
         return {
           content: [
@@ -790,11 +790,10 @@ function createStatelessServer({
     },
     async ({ tokenAddress, to, tokenId, tokenURI, gasLimit, gasPrice }) => {
       try {
-        ensureConfiguration('mint_nft');
-        const client = getRootstockClient();
-        const wallet = getWalletManager().getCurrentWallet();
+        // Check if wallet is configured (following hyperion-mcp-server pattern)
+        const wallet = getWalletWithErrorHandling();
 
-        const result = await client.mintNFT(
+        const result = await rootstockClient.mintNFT(
           wallet,
           tokenAddress,
           to,
@@ -804,7 +803,7 @@ function createStatelessServer({
           gasPrice
         );
 
-        const explorerUrl = client.getExplorerUrl();
+        const explorerUrl = rootstockClient.getExplorerUrl();
         return {
           content: [
             {

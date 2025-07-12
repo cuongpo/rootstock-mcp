@@ -21,25 +21,38 @@ import {
 import erc721Contracts from './erc721-contracts-rootstock.json' with { type: 'json' };
 
 export class RootstockClient {
-  private provider: ethers.JsonRpcProvider;
-  private httpClient: AxiosInstance;
+  private provider: ethers.JsonRpcProvider | null = null;
+  private httpClient: AxiosInstance | null = null;
   private config: RootstockConfig;
 
   constructor(config: RootstockConfig) {
     this.config = config;
-    this.provider = new ethers.JsonRpcProvider(config.rpcUrl, undefined, {
-      staticNetwork: true,
-      batchMaxCount: 1,
-    });
-    this.httpClient = axios.create({
-      baseURL: config.rpcUrl,
-      timeout: 60000, // Increased timeout for Rootstock
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      maxRedirects: 5,
-      validateStatus: (status) => status < 500, // Accept 4xx errors but not 5xx
-    });
+    // Defer provider and httpClient creation until actually needed
+  }
+
+  private getProvider(): ethers.JsonRpcProvider {
+    if (!this.provider) {
+      this.provider = new ethers.JsonRpcProvider(this.config.rpcUrl, undefined, {
+        staticNetwork: true,
+        batchMaxCount: 1,
+      });
+    }
+    return this.provider;
+  }
+
+  private getHttpClient(): AxiosInstance {
+    if (!this.httpClient) {
+      this.httpClient = axios.create({
+        baseURL: this.config.rpcUrl,
+        timeout: 60000, // Increased timeout for Rootstock
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        maxRedirects: 5,
+        validateStatus: (status) => status < 500, // Accept 4xx errors but not 5xx
+      });
+    }
+    return this.httpClient;
   }
 
   /**
@@ -61,7 +74,7 @@ export class RootstockClient {
    */
   async getBalance(address: string): Promise<string> {
     try {
-      const balance = await this.provider.getBalance(address);
+      const balance = await this.getProvider().getBalance(address);
       return ethers.formatEther(balance);
     } catch (error) {
       throw new Error(`Failed to get balance: ${error}`);
@@ -81,7 +94,7 @@ export class RootstockClient {
           'function symbol() view returns (string)',
           'function name() view returns (string)',
         ],
-        this.provider
+        this.getProvider()
       );
 
       const [balance, decimals, symbol, name] = await Promise.all([
@@ -114,7 +127,7 @@ export class RootstockClient {
     gasPrice?: string
   ): Promise<TransactionResponse> {
     try {
-      const connectedWallet = wallet.connect(this.provider);
+      const connectedWallet = wallet.connect(this.getProvider());
       
       const tx: ethers.TransactionRequest = {
         to,
@@ -154,7 +167,7 @@ export class RootstockClient {
     gasPrice?: string
   ): Promise<TransactionResponse> {
     try {
-      const connectedWallet = wallet.connect(this.provider);
+      const connectedWallet = wallet.connect(this.getProvider());
       
       const tokenContract = new ethers.Contract(
         tokenAddress,
@@ -197,8 +210,8 @@ export class RootstockClient {
   async getTransaction(hash: string): Promise<TransactionResponse> {
     try {
       const [tx, receipt] = await Promise.all([
-        this.provider.getTransaction(hash),
-        this.provider.getTransactionReceipt(hash),
+        this.getProvider().getTransaction(hash),
+        this.getProvider().getTransactionReceipt(hash),
       ]);
 
       if (!tx) {
@@ -228,11 +241,11 @@ export class RootstockClient {
     try {
       let block;
       if (blockHash) {
-        block = await this.provider.getBlock(blockHash);
+        block = await this.getProvider().getBlock(blockHash);
       } else if (blockNumber !== undefined) {
-        block = await this.provider.getBlock(blockNumber);
+        block = await this.getProvider().getBlock(blockNumber);
       } else {
-        block = await this.provider.getBlock('latest');
+        block = await this.getProvider().getBlock('latest');
       }
 
       if (!block) {
@@ -262,9 +275,9 @@ export class RootstockClient {
   async getNetworkInfo(): Promise<NetworkInfo> {
     try {
       const [network, blockNumber, feeData] = await Promise.all([
-        this.provider.getNetwork(),
-        this.provider.getBlockNumber(),
-        this.provider.getFeeData(),
+        this.getProvider().getNetwork(),
+        this.getProvider().getBlockNumber(),
+        this.getProvider().getFeeData(),
       ]);
 
       return {
@@ -297,8 +310,8 @@ export class RootstockClient {
       };
 
       const [gasLimit, feeData] = await Promise.all([
-        this.provider.estimateGas(tx),
-        this.provider.getFeeData(),
+        this.getProvider().estimateGas(tx),
+        this.getProvider().getFeeData(),
       ]);
 
       const gasPrice = feeData.gasPrice || BigInt(0);
@@ -329,7 +342,7 @@ export class RootstockClient {
         `function ${methodName}(${parameters.map((_, i) => `uint256 param${i}`).join(', ')}) view returns (uint256)`,
       ];
 
-      const contract = new ethers.Contract(contractAddress, contractAbi, this.provider);
+      const contract = new ethers.Contract(contractAddress, contractAbi, this.getProvider());
       const result = await contract[methodName](...parameters);
 
       return {
@@ -354,7 +367,7 @@ export class RootstockClient {
     gasPrice?: string
   ): Promise<TransactionResponse> {
     try {
-      const connectedWallet = wallet.connect(this.provider);
+      const connectedWallet = wallet.connect(this.getProvider());
       
       // Use a basic ABI if none provided
       const contractAbi = abi || [
@@ -411,10 +424,10 @@ export class RootstockClient {
     blockNumber?: number;
   }> {
     try {
-      const connectedWallet = wallet.connect(this.provider);
+      const connectedWallet = wallet.connect(this.getProvider());
 
       // Check wallet balance first
-      const balance = await this.provider.getBalance(wallet.address);
+      const balance = await this.getProvider().getBalance(wallet.address);
       console.log(`Wallet balance: ${ethers.formatEther(balance)} ${this.getCurrencySymbol()}`);
 
       if (balance === 0n) {
@@ -490,7 +503,7 @@ export class RootstockClient {
       const tokenContract = new ethers.Contract(
         tokenAddress,
         this.getStandardERC20ABI(),
-        this.provider
+        this.getProvider()
       );
 
       const [name, symbol, decimals, totalSupply] = await Promise.all([
@@ -506,7 +519,7 @@ export class RootstockClient {
         const mintableContract = new ethers.Contract(
           tokenAddress,
           this.getMintableERC20ABI(),
-          this.provider
+          this.getProvider()
         );
         owner = await mintableContract.owner();
       } catch {
@@ -538,7 +551,7 @@ export class RootstockClient {
     gasPrice?: string
   ): Promise<TransactionResponse> {
     try {
-      const connectedWallet = wallet.connect(this.provider);
+      const connectedWallet = wallet.connect(this.getProvider());
 
       const tokenContract = new ethers.Contract(
         tokenAddress,
@@ -585,10 +598,10 @@ export class RootstockClient {
     gasPrice?: string
   ): Promise<ERC721DeploymentResponse> {
     try {
-      const connectedWallet = wallet.connect(this.provider);
+      const connectedWallet = wallet.connect(this.getProvider());
 
       // Check wallet balance first
-      const balance = await this.provider.getBalance(wallet.address);
+      const balance = await this.getProvider().getBalance(wallet.address);
       console.log(`Wallet balance: ${ethers.formatEther(balance)} ${this.getCurrencySymbol()}`);
 
       if (balance === 0n) {
@@ -663,7 +676,7 @@ export class RootstockClient {
     blockNumber?: number;
   }> {
     try {
-      const connectedWallet = wallet.connect(this.provider);
+      const connectedWallet = wallet.connect(this.getProvider());
 
       const nftContract = new ethers.Contract(
         tokenAddress,
@@ -710,7 +723,7 @@ export class RootstockClient {
       const nftContract = new ethers.Contract(
         tokenAddress,
         this.getStandardERC721ABI(),
-        this.provider
+        this.getProvider()
       );
 
       const [name, symbol, totalSupply] = await Promise.all([
